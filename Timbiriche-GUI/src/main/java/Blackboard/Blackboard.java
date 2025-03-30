@@ -6,17 +6,41 @@ package Blackboard;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Blackboard {
     private String nombre;
     private ImageIcon avatar;
     private Color color;
+    private final List<BlackboardObserver> observers = new ArrayList<>();
     
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public void setAvatar(ImageIcon avatar) { this.avatar = avatar; }
-    public void setColor(Color color) { this.color = color; }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+        notifyObservers();
+    }
+    
+    public void setAvatar(ImageIcon avatar) {
+        this.avatar = avatar;
+        notifyObservers();
+    }
+    
+    public void setColor(Color color) {
+        this.color = color;
+        notifyObservers();
+    }
     
     public String getNombre() { return nombre; }
     public ImageIcon getAvatar() { return avatar; }
     public Color getColor() { return color; }
+    
+    public void addObserver(BlackboardObserver observer) {
+        observers.add(observer);
+    }
+    
+    private void notifyObservers() {
+        for (BlackboardObserver observer : observers) {
+            observer.onBlackboardUpdated(this);
+        }
+    }
 }
