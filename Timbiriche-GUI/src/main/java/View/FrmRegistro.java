@@ -4,13 +4,14 @@
  */
 package View;
 
+import Blackboard.Blackboard;
+import Blackboard.Controlador;
 import Model.Jugador;
+import Servidor.RegistroCliente;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-
-
 
 /**
  *
@@ -23,14 +24,18 @@ public class FrmRegistro extends JFrame {
     private ImageIcon avatarSeleccionado;
     private static final ArrayList<Color> colores = new ArrayList<>();
     private static int colorIndex = 0;
+    private Blackboard blackboard;
+    private Controlador controlador;
 
     public FrmRegistro() {
-       setTitle("Registro de Jugador");
+        setTitle("Registro de Jugador");
         setSize(600, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
+        blackboard = new Blackboard(); // Instancia del Blackboard
+        controlador = new Controlador(blackboard); // Instancia del Controlador
         inicializarColores();
         initUI();
         setVisible(true);
@@ -68,8 +73,8 @@ public class FrmRegistro extends JFrame {
                 }
             }
         });
-        
-                panelAvatares = new JPanel(new GridLayout(2, 4, 10, 10));
+
+        panelAvatares = new JPanel(new GridLayout(2, 4, 10, 10));
         panelAvatares.setOpaque(false);
         panelAvatares.setMaximumSize(new Dimension(400, 200));
         panelAvatares.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -92,9 +97,8 @@ public class FrmRegistro extends JFrame {
         add(panelPrincipal, BorderLayout.CENTER);
     }
 
-        
     private void cargarAvatares() {
-       String[] nombresAvatares = {
+        String[] nombresAvatares = {
             "GATO.png", "LEIA.png", "LOBO.png", "PINGUINO.png",
             "RANA.png", "ROBOCOB.png"
         };
@@ -117,7 +121,7 @@ public class FrmRegistro extends JFrame {
 
     private void registrarJugador(ActionEvent e) {
         String nombre = txtNombre.getText().trim();
-
+        
         if (nombre.isEmpty() || nombre.equals("Usuario")) {
             JOptionPane.showMessageDialog(this, "Ingresa un nombre válido.");
             return;
@@ -129,6 +133,14 @@ public class FrmRegistro extends JFrame {
         }
 
         Color colorAsignado = colores.get(colorIndex++ % colores.size());
+        System.out.println("Intentando registrar jugador en el servidor: " + nombre);
+
+        if (RegistroCliente.registrarJugador(nombre, colorAsignado, avatarSeleccionado)) {
+            JOptionPane.showMessageDialog(this, "Jugador " + nombre + " registrado exitosamente!");
+        } else {
+            JOptionPane.showMessageDialog(this, "Error al registrar jugador.");
+        }
+
         Jugador jugador = new Jugador(nombre, colorAsignado, avatarSeleccionado);
 
         FrmJuego frmJuego = new FrmJuego(jugador);
