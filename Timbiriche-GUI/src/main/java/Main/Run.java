@@ -3,19 +3,20 @@
  */
 package Main;
 
-import View.FrmEditarPerfil;
-import View.FrmRegistro;
+import mvcRegistro.VistaRegistro;
+import mvcRegistro.ModeloRegistro;
+import mvcRegistro.ControladorRegistro;
 
-/**
- *
- * @author rramirez
- */
 public class Run {
-    
+
     public static void main(String[] args) {
-        FrmRegistro fr = new FrmRegistro();
-        fr.setVisible(true);
-//        FrmEditarPerfil fe = new FrmEditarPerfil();
-//        fe.setVisible(true);
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            VistaRegistro vista = new VistaRegistro();
+            ModeloRegistro modelo = new ModeloRegistro();
+            new ControladorRegistro(vista, modelo);
+            vista.setVisible(true);
+        });
     }
 }
+
+
