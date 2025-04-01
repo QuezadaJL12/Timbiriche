@@ -30,6 +30,7 @@ public class VistaLobby extends JFrame {
         initComponents();
         BtnContinuar.setEnabled(false);
         agregarContador();
+        this.setExtendedState(this.MAXIMIZED_BOTH);
     }
 
     public VistaLobby(Jugador jugador, int tamanioTablero) {

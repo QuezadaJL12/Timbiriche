@@ -15,7 +15,7 @@ public class VistaRegistro extends javax.swing.JFrame {
     
     public VistaRegistro() {
         initComponents();
-        this.setLocationRelativeTo(null); // Centrar ventana
+        this.setExtendedState(this.MAXIMIZED_BOTH);
     }
 
     // Getters para el controlador

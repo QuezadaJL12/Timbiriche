@@ -14,13 +14,13 @@ import java.awt.*;
  */
 public class VistaEditarPerfil extends JFrame {
 
-   
     private PerfilEditadoListener listener;
     private ImageIcon avatarSeleccionado;
 
     public VistaEditarPerfil() {
         initComponents();
         setLocationRelativeTo(null); // Centra la ventana
+        this.setExtendedState(this.MAXIMIZED_BOTH);
     }
 
     public void setPerfilEditadoListener(PerfilEditadoListener listener) {
@@ -80,13 +80,17 @@ public class VistaEditarPerfil extends JFrame {
         JPaneRegistro.setBackground(new java.awt.Color(153, 153, 153));
         JPaneRegistro.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
+        txtNombre.setBackground(new java.awt.Color(255, 255, 255));
+        txtNombre.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
+        txtNombre.setForeground(new java.awt.Color(0, 0, 0));
         txtNombre.setText("nick");
+        txtNombre.setBorder(null);
         txtNombre.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtNombreActionPerformed(evt);
             }
         });
-        JPaneRegistro.add(txtNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(840, 290, 190, 40));
+        JPaneRegistro.add(txtNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(840, 290, 230, 40));
 
         BtnAceptar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Rectangle 4.png"))); // NOI18N
         BtnAceptar.setContentAreaFilled(false);
@@ -97,12 +101,12 @@ public class VistaEditarPerfil extends JFrame {
         });
         JPaneRegistro.add(BtnAceptar, new org.netbeans.lib.awtextra.AbsoluteConstraints(1090, 880, -1, 80));
 
-        avatar.setFont(new java.awt.Font("Segoe UI", 1, 38)); // NOI18N
+        avatar.setFont(new java.awt.Font("Comic Sans MS", 1, 38)); // NOI18N
         avatar.setForeground(new java.awt.Color(255, 255, 255));
         avatar.setText("Avatar");
-        JPaneRegistro.add(avatar, new org.netbeans.lib.awtextra.AbsoluteConstraints(900, 390, 120, -1));
+        JPaneRegistro.add(avatar, new org.netbeans.lib.awtextra.AbsoluteConstraints(900, 390, 130, -1));
 
-        Nombre.setFont(new java.awt.Font("Segoe UI", 1, 36)); // NOI18N
+        Nombre.setFont(new java.awt.Font("Comic Sans MS", 1, 36)); // NOI18N
         Nombre.setForeground(new java.awt.Color(204, 204, 204));
         Nombre.setText("Nombre");
         JPaneRegistro.add(Nombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(890, 200, -1, -1));
@@ -111,10 +115,10 @@ public class VistaEditarPerfil extends JFrame {
         JPaneRegistro.add(Lbln, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 270, -1, 80));
 
         LblRegistro.setBackground(new java.awt.Color(255, 255, 255));
-        LblRegistro.setFont(new java.awt.Font("Segoe UI", 1, 60)); // NOI18N
+        LblRegistro.setFont(new java.awt.Font("Comic Sans MS", 1, 60)); // NOI18N
         LblRegistro.setForeground(new java.awt.Color(255, 255, 255));
         LblRegistro.setText("Editar Perfil");
-        JPaneRegistro.add(LblRegistro, new org.netbeans.lib.awtextra.AbsoluteConstraints(790, 50, 340, 100));
+        JPaneRegistro.add(LblRegistro, new org.netbeans.lib.awtextra.AbsoluteConstraints(780, 50, 370, 100));
 
         BtnCancelar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Rectangle 4.png"))); // NOI18N
         BtnCancelar.setContentAreaFilled(false);
@@ -146,11 +150,11 @@ public class VistaEditarPerfil extends JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BtnAceptarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnAceptarActionPerformed
-   
+
     }//GEN-LAST:event_BtnAceptarActionPerformed
 
     private void BtnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnCancelarActionPerformed
-       
+
     }//GEN-LAST:event_BtnCancelarActionPerformed
 
     private void txtNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreActionPerformed
