@@ -2,31 +2,50 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package View;
+package mvcLobby;
 
-import Model.Jugador;
+import com.mycompany.blackboard.modelo.Jugador;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import mvcEditarPerfil.ControladorEditarPerfil;
+import mvcEditarPerfil.VistaEditarPerfil;
+import mvcEditarPerfil.PerfilEditadoListener;
 
-public class FrmLobbyJuego extends JFrame {
+
+public class VistaLobby extends JFrame {
 
     private final ArrayList<Jugador> jugadores = new ArrayList<>();
     private final Set<Color> coloresUsados = new HashSet<>();
     private int tamañoTablero;
     private final Color[] coloresDisponibles = {
         Color.RED, Color.BLUE, Color.GREEN, Color.MAGENTA
-            
     };
 
-    private boolean listo1 = false, listo2 = false, listo3 = false, listo4 = false;
+    private final JLabel lblContador = new JLabel();
 
-    public FrmLobbyJuego() {
+    public VistaLobby() {
         initComponents();
         BtnContinuar.setEnabled(false);
+        agregarContador();
+    }
+
+    public VistaLobby(Jugador jugador, int tamanioTablero) {
+        initComponents();
+        this.tamañoTablero = tamanioTablero;
+        agregarContador();
+        agregarJugador(jugador);
+        BtnContinuar.setEnabled(false);
+        LblTablero.setText(tamanioTablero + " x " + tamanioTablero);
+    }
+
+    private void agregarContador() {
+        lblContador.setBounds(870, 820, 300, 30);
+        lblContador.setForeground(Color.WHITE);
+        lblContador.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        JPaneTamTab.add(lblContador);
     }
 
     private Color asignarColorDisponible() {
@@ -42,73 +61,73 @@ public class FrmLobbyJuego extends JFrame {
     public void cargarJugador(int index, Jugador jugador) {
         switch (index) {
             case 0 -> {
-                LblNombre.setText(jugador.getNombreUsuario());
+                LblNombre.setText(jugador.getNombre());
                 BtnImgPlayer.setIcon(jugador.getAvatar());
                 LblColorP.setBackground(jugador.getColor());
             }
             case 1 -> {
-                LblNombre2.setText(jugador.getNombreUsuario());
+                LblNombre2.setText(jugador.getNombre());
                 BtnImgPlayer2.setIcon(jugador.getAvatar());
                 LblColorP2.setBackground(jugador.getColor());
             }
             case 2 -> {
-                LblNombre3.setText(jugador.getNombreUsuario());
+                LblNombre3.setText(jugador.getNombre());
                 BtnImgPlayer3.setIcon(jugador.getAvatar());
                 LblColorP3.setBackground(jugador.getColor());
             }
             case 3 -> {
-                LblNombre4.setText(jugador.getNombreUsuario());
+                LblNombre4.setText(jugador.getNombre());
                 BtnImgPlayer4.setIcon(jugador.getAvatar());
                 LblColorP4.setBackground(jugador.getColor());
             }
         }
     }
 
-    private void marcarListo(int index) {
-        switch (index) {
-            case 0 ->
-                listo1 = true;
-            case 1 ->
-                listo2 = true;
-            case 2 ->
-                listo3 = true;
-            case 3 ->
-                listo4 = true;
-        }
-        verificarContinuar();
+    public void verificarContinuar() {
+        long listos = jugadores.stream().filter(Jugador::isListo).count();
+        BtnContinuar.setEnabled(listos >= 2);
+        lblContador.setText("Jugadores listos: " + listos + "/" + jugadores.size());
     }
 
-    private void verificarContinuar() {
-        int listos = 0;
-        if (listo1) {
-            listos++;
+    public void actualizarEstadoListo(int index) {
+        switch (index) {
+            case 0 ->
+                LblNombre.setText(LblNombre.getText() + " ✅");
+            case 1 ->
+                LblNombre2.setText(LblNombre2.getText() + " ✅");
+            case 2 ->
+                LblNombre3.setText(LblNombre3.getText() + " ✅");
+            case 3 ->
+                LblNombre4.setText(LblNombre4.getText() + " ✅");
         }
-        if (listo2) {
-            listos++;
-        }
-        if (listo3) {
-            listos++;
-        }
-        if (listo4) {
-            listos++;
-        }
-        BtnContinuar.setEnabled(listos >= 2);
     }
 
     public void agregarJugadorDemo(String nombre, ImageIcon icono) {
         Color color = asignarColorDisponible();
         Jugador jugador = new Jugador(nombre, color, icono);
+        agregarJugador(jugador);
+    }
+
+    public void agregarJugador(Jugador jugador) {
         jugadores.add(jugador);
         cargarJugador(jugadores.size() - 1, jugador);
     }
-    
-    public FrmLobbyJuego(Jugador jugador, int tamañoTablero) {
-    initComponents();
-    this.jugadores.add(jugador); // o una lista, según tu lógica
-    this.tamañoTablero = tamañoTablero;
-    cargarJugador(0, jugador); // suponiendo que es el host
-}
 
+    public JButton getBtnListo() {
+        return BtnListo;
+    }
+
+    public JButton getBtnContinuar() {
+        return BtnContinuar;
+    }
+
+    public Jugador getJugadorActual() {
+        return jugadores.get(0);
+    }
+
+    public JButton getBtnEditar() {
+        return BtnEditar;
+    }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -263,6 +282,11 @@ public class FrmLobbyJuego extends JFrame {
 
         BtnEditar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/EditarImg.png"))); // NOI18N
         BtnEditar.setContentAreaFilled(false);
+        BtnEditar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnEditarActionPerformed(evt);
+            }
+        });
         JPaneTamTab.add(BtnEditar, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 110, 110));
 
         LblTablero.setFont(new java.awt.Font("Segoe UI", 1, 40)); // NOI18N
@@ -315,9 +339,7 @@ public class FrmLobbyJuego extends JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BtnContinuarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnContinuarActionPerformed
-        JOptionPane.showMessageDialog(this, "Iniciando partida con " + jugadores.size() + " jugadores.");
-        // new FrmJuego(jugadores).setVisible(true);
-        this.dispose();
+
 
     }//GEN-LAST:event_BtnContinuarActionPerformed
 
@@ -330,24 +352,43 @@ public class FrmLobbyJuego extends JFrame {
     }//GEN-LAST:event_timbiActionPerformed
 
     private void BtnListo4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnListo4ActionPerformed
-        marcarListo(3);
-        BtnListo4.setEnabled(false);
+
     }//GEN-LAST:event_BtnListo4ActionPerformed
 
     private void BtnListo2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnListo2ActionPerformed
-        marcarListo(1);
-        BtnListo2.setEnabled(false);
+
     }//GEN-LAST:event_BtnListo2ActionPerformed
 
     private void BtnListoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnListoActionPerformed
-        marcarListo(0);
-        BtnListo.setEnabled(false);
+
     }//GEN-LAST:event_BtnListoActionPerformed
 
     private void BtnListo3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnListo3ActionPerformed
-        marcarListo(2);
-        BtnListo3.setEnabled(false);
+
     }//GEN-LAST:event_BtnListo3ActionPerformed
+
+    private void BtnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnEditarActionPerformed
+      if (!jugadores.isEmpty()) {
+        Jugador jugadorActual = jugadores.get(0); // o el jugador seleccionado
+
+        VistaEditarPerfil vistaEditar = new VistaEditarPerfil();
+
+        ControladorEditarPerfil controladorEditar = new ControladorEditarPerfil(
+            vistaEditar,
+            jugadorActual,
+            new PerfilEditadoListener() {
+                @Override
+                public void perfilEditado(Jugador jugadorActualizado) {
+                    cargarJugador(0, jugadorActualizado); // índice 0 si es el host
+                }
+            }
+        );
+
+        vistaEditar.setVisible(true);
+    } else {
+        JOptionPane.showMessageDialog(this, "No hay jugador para editar.");
+    }
+    }//GEN-LAST:event_BtnEditarActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -380,14 +421,5 @@ public class FrmLobbyJuego extends JFrame {
     private javax.swing.JButton riche;
     private javax.swing.JButton timbi;
     // End of variables declaration//GEN-END:variables
-
-   public static void main(String[] args) {
-    FrmLobbyJuego lobby = new FrmLobbyJuego();
-    lobby.agregarJugadorDemo("Chino", new ImageIcon("src/main/resources/Avatares/RANA.png"));
-    lobby.agregarJugadorDemo("Leia", new ImageIcon("src/main/resources/Avatares/LEIA.png"));
-    lobby.setVisible(true);
-}
-
-
 
 }

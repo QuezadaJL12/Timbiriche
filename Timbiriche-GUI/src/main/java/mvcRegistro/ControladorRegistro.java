@@ -4,8 +4,9 @@
  */
 package mvcRegistro;
 
-import Model.Jugador;
-import View.FrmTamanoTablero;
+
+import com.mycompany.blackboard.modelo.Jugador;
+import mvcTamanoTablero.VistaTamanoTablero;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -67,26 +68,33 @@ public class ControladorRegistro {
         panel.revalidate();
         panel.repaint();
     }
+    private static final ArrayList<String> nombresRegistrados = new ArrayList<>();
 
     private void registrarJugador(ActionEvent e) {
         String nombre = vista.getTxtNombre().getText().trim();
 
-        if (nombre.isEmpty() || nombre.equalsIgnoreCase("Nick") || nombre.equalsIgnoreCase("Name")) {
-            JOptionPane.showMessageDialog(vista, "Ingresa un nombre válido.");
-            return;
-        }
+    if (nombre.isEmpty() || nombre.equalsIgnoreCase("Usuario")) {
+        JOptionPane.showMessageDialog(vista, "Ingresa un nombre válido.");
+        return;
+    }
 
-        if (modelo.getAvatarSeleccionado() == null) {
-            JOptionPane.showMessageDialog(vista, "Selecciona un avatar.");
-            return;
-        }
+    if (nombresRegistrados.contains(nombre)) {
+        JOptionPane.showMessageDialog(vista, "Ese nombre ya está registrado. Intenta con otro.");
+        return;
+    }
 
-        Color colorAsignado = colores.get(colorIndex++ % colores.size());
-        Jugador jugador = new Jugador(nombre, colorAsignado, modelo.getAvatarSeleccionado());
+    if (modelo.getAvatarSeleccionado() == null) {
+        JOptionPane.showMessageDialog(vista, "Selecciona un avatar.");
+        return;
+    }
 
-        // Abre la siguiente ventana
-        FrmTamanoTablero tablero = new FrmTamanoTablero(jugador);
-        tablero.setVisible(true);
-        vista.dispose();
+    Color colorAsignado = colores.get(colorIndex++ % colores.size());
+    Jugador jugador = new Jugador(nombre, colorAsignado, modelo.getAvatarSeleccionado());
+
+    nombresRegistrados.add(nombre); // Guardar nombre para futuras validaciones
+
+    VistaTamanoTablero tablero = new VistaTamanoTablero(jugador);
+    tablero.setVisible(true);
+    vista.dispose();
     }
 }

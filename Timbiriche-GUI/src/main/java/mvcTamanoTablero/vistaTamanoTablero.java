@@ -2,29 +2,59 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package View;
+package mvcTamanoTablero;
 
-import Model.Jugador;
 
-import javax.swing.JOptionPane;
+import com.mycompany.blackboard.modelo.Jugador;
+import javax.swing.*;
 
-import View.FrmLobbyJuego;
-
-public class FrmTamanoTablero extends javax.swing.JFrame {
-
+public class VistaTamanoTablero extends javax.swing.JFrame {
 
     private int tamañoSeleccionado = 0;
-    private Jugador jugadorSeleccionado;
+    private Jugador jugador; 
 
-    public FrmTamanoTablero(Jugador jugador) {
+    public VistaTamanoTablero(Jugador jugador) {
         initComponents();
+        this.jugador = jugador; 
         this.setExtendedState(this.MAXIMIZED_BOTH);
-        this.jugadorSeleccionado = jugador;
     }
 
-    private void seleccionarTamano(int tamano) {
-        this.tamañoSeleccionado = tamano;
-        JOptionPane.showMessageDialog(this, "Tamaño seleccionado: " + tamano + "x" + tamano);
+    // Getters necesarios para el controlador
+    public JButton getBtnServidor() {
+        return BtnServidor;
+    }
+
+    public JButton getBtnUnirse() {
+        return BtnUnirse;
+    }
+
+    public JButton getBtnContinuar() {
+        return BtnContinuar;
+    }
+
+    public JButton getBtnTam1() {
+        return BtnTam1;
+    }
+
+    public JButton getBtnTam2() {
+        return BtnTam2;
+    }
+
+    public JButton getBtnTam3() {
+        return BtnTam3;
+    }
+
+    public void setTamañoSeleccionado(int tamaño) {
+        this.tamañoSeleccionado = tamaño;
+    }
+
+    public int getTamañoSeleccionado() {
+        return tamañoSeleccionado;
+    }
+
+  // Getter para el jugador
+    public Jugador getJugadorSeleccionado() {
+        return jugador;
     }
 
     @SuppressWarnings("unchecked")
@@ -177,42 +207,29 @@ public class FrmTamanoTablero extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BtnTam1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnTam1ActionPerformed
-        tamañoSeleccionado = 10;
+
     }//GEN-LAST:event_BtnTam1ActionPerformed
 
     private void BtnTam2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnTam2ActionPerformed
-        tamañoSeleccionado = 20;
+
     }//GEN-LAST:event_BtnTam2ActionPerformed
 
     private void BtnTam3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnTam3ActionPerformed
-        tamañoSeleccionado = 30;
+
     }//GEN-LAST:event_BtnTam3ActionPerformed
 
 
     private void BtnServidorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnServidorActionPerformed
-        if (tamañoSeleccionado == 0) {
-            JOptionPane.showMessageDialog(this, "Selecciona un tamaño de tablero primero.");
-            return;
-        }
-
-       
-        // Abrir el lobby con el jugador actual como host
-        FrmLobbyJuego lobby = new FrmLobbyJuego(jugadorSeleccionado, tamañoSeleccionado);
-        lobby.setVisible(true);
-        this.dispose();
 
 
     }//GEN-LAST:event_BtnServidorActionPerformed
 
     private void BtnContinuarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnContinuarActionPerformed
-        if (tamañoSeleccionado == 0) {
-            JOptionPane.showMessageDialog(this, "Selecciona un tamaño de tablero primero.");
-            return;
-        }
+
     }//GEN-LAST:event_BtnContinuarActionPerformed
 
     private void BtnUnirseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnUnirseActionPerformed
-       
+
 
     }//GEN-LAST:event_BtnUnirseActionPerformed
 
