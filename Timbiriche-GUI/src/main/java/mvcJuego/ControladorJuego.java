@@ -13,45 +13,107 @@ import java.util.List;
  */
 public class ControladorJuego {
 
-    private final VistaJuego vista;
-    private final ModeloJuego modelo;
+   private final VistaJuego vista;
+    private final List<Jugador> jugadores;
+    private final int tamañoTablero;
+    private int turnoActual = 0;
 
-    public ControladorJuego(List<Jugador> jugadores, int tamanioTablero) {
-        this.modelo = new ModeloJuego(jugadores, tamanioTablero);
-        this.vista = new VistaJuego(this);
-        this.vista.setVisible(true);
+    private final int[][] tableroLineas; // 0 = vacío, 1 = ocupado
+    private final int[][] tableroPuntos; // para cuadros reclamados
+
+    private final int[] puntuaciones;
+
+    public ControladorJuego(VistaJuego vista, List<Jugador> jugadores, int tamañoTablero) {
+        this.vista = vista;
+        this.jugadores = jugadores;
+        this.tamañoTablero = tamañoTablero;
+
+        int size = tamañoTablero * 2 + 1;
+        this.tableroLineas = new int[size][size];
+        this.tableroPuntos = new int[tamañoTablero][tamañoTablero];
+        this.puntuaciones = new int[jugadores.size()];
     }
 
     public void iniciarJuego() {
-        modelo.inicializarTablero();
-        vista.mostrarJugadores(modelo.getJugadores());
-        vista.mostrarTablero(modelo.getGridSize());
+        actualizarVista();
     }
 
-    public void seleccionarLinea(int x, int y) {
-        boolean cuadroCompletado = modelo.procesarJugada(x, y);
+    public void seleccionarLinea(int i, int j) {
+        if (tableroLineas[i][j] == 1) return; // Ya está ocupada
 
-        vista.actualizarEstado(
-                modelo.getJugadorActual(),
-                modelo.getPuntosX(),
-                modelo.getPuntosO()
-        );
+        tableroLineas[i][j] = 1;
+        boolean hizoCuadro = marcarCuadrosSiCorresponde(i, j);
 
-        if (modelo.estaJuegoTerminado()) {
-            String ganador;
-            if (modelo.getPuntosX() > modelo.getPuntosO()) {
-                ganador = "Jugador X";
-            } else if (modelo.getPuntosO() > modelo.getPuntosX()) {
-                ganador = "Jugador O";
-            } else {
-                ganador = "Empate";
+        if (!hizoCuadro) {
+            turnoActual = (turnoActual + 1) % jugadores.size();
+        }
+
+        actualizarVista();
+        verificarFinDelJuego();
+    }
+
+    private boolean marcarCuadrosSiCorresponde(int i, int j) {
+        boolean marco = false;
+
+        int[][] posibles = {
+            {i - 1, j - 1}, {i - 1, j + 1}, {i + 1, j - 1}, {i + 1, j + 1}
+        };
+
+        for (int[] punto : posibles) {
+            int fila = punto[0] / 2;
+            int col = punto[1] / 2;
+
+            if (fila >= 0 && fila < tamañoTablero && col >= 0 && col < tamañoTablero) {
+                if (tieneCuadro(fila, col)) {
+                    if (tableroPuntos[fila][col] == 0) {
+                        tableroPuntos[fila][col] = turnoActual + 1;
+                        puntuaciones[turnoActual]++;
+                        marco = true;
+                    }
+                }
+            }
+        }
+
+        return marco;
+    }
+
+    private boolean tieneCuadro(int fila, int col) {
+        int i = fila * 2 + 1;
+        int j = col * 2 + 1;
+
+        return tableroLineas[i - 1][j] == 1 &&
+               tableroLineas[i + 1][j] == 1 &&
+               tableroLineas[i][j - 1] == 1 &&
+               tableroLineas[i][j + 1] == 1;
+    }
+
+    private void actualizarVista() {
+        String nombreTurno = jugadores.get(turnoActual).getNombre();
+        int puntosX = puntuaciones.length > 0 ? puntuaciones[0] : 0;
+        int puntosO = puntuaciones.length > 1 ? puntuaciones[1] : 0;
+
+        vista.actualizarEstado(nombreTurno, puntosX, puntosO);
+    }
+
+    private void verificarFinDelJuego() {
+        int totalCuadros = tamañoTablero * tamañoTablero;
+        int suma = 0;
+        for (int puntos : puntuaciones) {
+            suma += puntos;
+        }
+
+        if (suma == totalCuadros) {
+            // Juego terminado
+            int max = -1;
+            String ganador = "Empate";
+            for (int i = 0; i < jugadores.size(); i++) {
+                if (puntuaciones[i] > max) {
+                    max = puntuaciones[i];
+                    ganador = jugadores.get(i).getNombre();
+                }
             }
             vista.mostrarGanador(ganador);
         }
-    }
-
-    public ModeloJuego getModelo() {
-        return modelo;
     }
 
 }

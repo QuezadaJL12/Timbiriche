@@ -6,7 +6,7 @@ package com.mycompany.blackboard.ks;
 
 import com.mycompany.blackboard.Blackboard;
 import com.mycompany.blackboard.Evento;
-import com.mycompany.blackboard.EventoIniciarJuego.EventoIniciarJuego;
+import com.mycompany.blackboard.eventos.EventoIniciarJuego;
 import com.mycompany.blackboard.KnowledgeSource;
 import java.util.function.Consumer;
 

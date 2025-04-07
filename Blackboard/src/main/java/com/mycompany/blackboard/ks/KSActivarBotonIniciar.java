@@ -6,7 +6,7 @@ package com.mycompany.blackboard.ks;
 
 import com.mycompany.blackboard.Blackboard;
 import com.mycompany.blackboard.Evento;
-import com.mycompany.blackboard.EventoIniciarPartida.EventoIniciarPartida;
+import com.mycompany.blackboard.eventos.EventoIniciarPartida;
 import com.mycompany.blackboard.KnowledgeSource;
 
 

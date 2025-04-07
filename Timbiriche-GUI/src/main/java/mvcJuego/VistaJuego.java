@@ -15,17 +15,59 @@ import java.util.List;
  */
 public class VistaJuego extends javax.swing.JFrame {
 
-   private ControladorJuego controlador;
+    private ControladorJuego controlador;
     private JPanel panelJuego;
     private JLabel lblJugadorActual;
     private JLabel lblPuntuacionX;
     private JLabel lblPuntuacionO;
 
+    private List<Jugador> jugadores;
+    private int tamañoTablero;
+
+    // Constructor cuando ya tienes el controlador externo (opcional)
     public VistaJuego(ControladorJuego controlador) {
         this.controlador = controlador;
         initComponents();
         configurarInterfaz();
 
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                controlador.iniciarJuego();
+            }
+        });
+    }
+
+    private void BtnContinuarActionPerformed(java.awt.event.ActionEvent evt) {
+        long listos = jugadores.stream().filter(Jugador::isListo).count();
+
+        if (listos >= 2) {
+            List<Jugador> jugadoresListos = jugadores.stream()
+                    .filter(Jugador::isListo)
+                    .toList();
+
+            Main.MainJuego.iniciar(jugadoresListos, tamañoTablero);
+            this.dispose(); // Cierra la ventana del lobby
+
+        } else {
+            JOptionPane.showMessageDialog(this, "Se requieren al menos 2 jugadores listos.");
+        }
+    }
+
+    // Constructor principal: crea controlador y genera tablero
+    public VistaJuego(List<Jugador> jugadores, int tamañoTablero) {
+        initComponents();
+        this.jugadores = jugadores;
+        this.tamañoTablero = tamañoTablero;
+
+        configurarInterfaz();
+
+        // Crear controlador automáticamente
+        this.controlador = new ControladorJuego(this, jugadores, tamañoTablero);
+
+        // Mostrar el tablero generado
+        mostrarTablero(tamañoTablero);
+
+        // Iniciar juego cuando abre
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowOpened(java.awt.event.WindowEvent evt) {
                 controlador.iniciarJuego();
@@ -70,17 +112,8 @@ public class VistaJuego extends javax.swing.JFrame {
         jPanel1.add(panelCentral, BorderLayout.CENTER);
 
         setTitle("Timbiriche - En partida");
-        setSize(800, 700);
+        setSize(900, 800);
         setLocationRelativeTo(null);
-    }
-
-    public void mostrarJugadores(List<Jugador> jugadores) {
-        Jugador jugador = jugadores.get(0);
-        JLabel lblNombre = new JLabel(jugador.getNombre(), SwingConstants.CENTER);
-        lblNombre.setFont(new Font("Arial", Font.BOLD, 16));
-        lblNombre.setForeground(jugador.getColor());
-        JLabel lblAvatar = new JLabel(jugador.getAvatar());
-        JOptionPane.showMessageDialog(this, lblAvatar, "Jugador host: " + jugador.getNombre(), JOptionPane.INFORMATION_MESSAGE);
     }
 
     public void mostrarTablero(int gridSize) {
@@ -122,9 +155,17 @@ public class VistaJuego extends javax.swing.JFrame {
 
     public void mostrarGanador(String ganador) {
         JOptionPane.showMessageDialog(this,
-            "¡Fin del juego!\nGanador: " + ganador,
-            "Juego terminado",
-            JOptionPane.INFORMATION_MESSAGE);
+                "¡Fin del juego!\nGanador: " + ganador,
+                "Juego terminado",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public List<Jugador> getJugadores() {
+        return jugadores;
+    }
+
+    public int getTamañoTablero() {
+        return tamañoTablero;
     }
 
     @SuppressWarnings("unchecked")

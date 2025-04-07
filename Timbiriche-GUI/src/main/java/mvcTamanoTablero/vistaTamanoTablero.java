@@ -4,19 +4,33 @@
  */
 package mvcTamanoTablero;
 
-
 import com.mycompany.blackboard.modelo.Jugador;
+import java.awt.Color;
 import javax.swing.*;
 
 public class VistaTamanoTablero extends javax.swing.JFrame {
 
     private int tamañoSeleccionado = 0;
-    private Jugador jugador; 
+    private Jugador jugador;
 
     public VistaTamanoTablero(Jugador jugador) {
         initComponents();
-        this.jugador = jugador; 
+        this.jugador = jugador;
         this.setExtendedState(this.MAXIMIZED_BOTH);
+    }
+
+    public String getNombreJugador() {
+        return jugador.getNombre(); // El nombre que se registró
+    }
+
+    public String getAvatarSeleccionado() {
+        String path = jugador.getAvatar().toString();
+        // Extraer solo el nombre del archivo, ej: "GATO.png"
+        return path.substring(path.lastIndexOf("/") + 1);
+    }
+
+    public Color getColorSeleccionado() {
+        return jugador.getColor();
     }
 
     // Getters necesarios para el controlador
@@ -52,7 +66,7 @@ public class VistaTamanoTablero extends javax.swing.JFrame {
         return tamañoSeleccionado;
     }
 
-  // Getter para el jugador
+    // Getter para el jugador
     public Jugador getJugadorSeleccionado() {
         return jugador;
     }

@@ -6,12 +6,13 @@ package com.mycompany.blackboard.modelo;
 
 import java.awt.Color;
 import javax.swing.ImageIcon;
+import java.io.Serializable;
 
 /**
  *
  * @author joseq
  */
-public class Jugador {
+public class Jugador implements Serializable {
 
     private String nombre;
     private Color color;
@@ -56,5 +57,25 @@ public class Jugador {
     public void setListo(boolean listo) {
         this.listo = listo;
     }
+    
+    @Override
+public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null || getClass() != obj.getClass()) return false;
+
+    Jugador jugador = (Jugador) obj;
+    return nombre.equals(jugador.nombre)
+            && color.equals(jugador.color)
+            && avatar.toString().equals(jugador.avatar.toString());
+}
+
+@Override
+public int hashCode() {
+    int result = nombre.hashCode();
+    result = 31 * result + color.hashCode();
+    result = 31 * result + avatar.toString().hashCode();
+    return result;
+}
+
 
 }

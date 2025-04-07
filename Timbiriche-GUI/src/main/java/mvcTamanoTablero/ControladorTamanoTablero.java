@@ -4,10 +4,15 @@
  */
 package mvcTamanoTablero;
 
-import mvcLobby.VistaLobby;
+import com.mycompany.blackboard.eventos.EventoJugadorListo;
 import com.mycompany.blackboard.modelo.Jugador;
-import java.awt.event.ActionEvent;
-import javax.swing.JOptionPane;
+import com.mycompany.blackboard.modelo.JugadorRed;
+import com.mycompany.timbirichenetwork.Cliente;
+import com.mycompany.timbirichenetwork.Servidor;
+import mvcLobby.VistaLobby;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  *
@@ -22,24 +27,65 @@ public class ControladorTamanoTablero {
         this.vista = vista;
         this.modelo = modelo;
 
-        this.vista.getBtnServidor().addActionListener(this::iniciarServidor);
-        this.vista.getBtnTam1().addActionListener(e -> modelo.setTamanioTablero(10));
-        this.vista.getBtnTam2().addActionListener(e -> modelo.setTamanioTablero(20));
-        this.vista.getBtnTam3().addActionListener(e -> modelo.setTamanioTablero(30));
+        configurarEventos();
     }
 
-    private void iniciarServidor(ActionEvent e) {
-        int tam = modelo.getTamanioTablero();
-        if (tam == 0) {
-            JOptionPane.showMessageDialog(vista, "Selecciona un tamaño de tablero.");
-            return;
-        }
+    private void configurarEventos() {
+        // 🎮 Botón para iniciar como servidor (host)
+        vista.getBtnServidor().addActionListener(e -> {
+            int tamaño = vista.getTamañoSeleccionado();
+            if (tamaño == 0) {
+                JOptionPane.showMessageDialog(vista, "Selecciona un tamaño de tablero.");
+                return;
+            }
 
-        Jugador jugador = vista.getJugadorSeleccionado(); 
+            try {
+                // Iniciar servidor
+                Servidor servidor = new Servidor();
+                servidor.iniciar(1234);
 
-        VistaLobby lobby = new VistaLobby(jugador, tam);
-        lobby.setVisible(true);
-        vista.dispose();
+                // Crear y mostrar VistaLobby
+                Jugador jugador = vista.getJugadorSeleccionado();
+                VistaLobby vistaLobby = new VistaLobby(jugador, tamaño);
+                vistaLobby.setVisible(true);
+
+                vista.dispose();
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(vista, "Error al iniciar el servidor.");
+            }
+        });
+
+        // 🤝 Botón para unirse como cliente
+        vista.getBtnUnirse().addActionListener(e -> {
+            try {
+                String nombre = vista.getNombreJugador();
+                String avatarPath = vista.getAvatarSeleccionado();
+                Color color = vista.getColorSeleccionado();
+                String colorHex = "#" + Integer.toHexString(color.getRGB()).substring(2);
+
+                // Conectar al servidor
+                Cliente cliente = new Cliente();
+                cliente.conectar("localhost", 1234); // Cambiar si es remoto
+
+                // Enviar evento del jugador
+                JugadorRed jugadorRed = new JugadorRed(nombre, colorHex, avatarPath, true);
+                cliente.enviar(new EventoJugadorListo(jugadorRed));
+
+                // Abrir VistaLobby del cliente
+                ImageIcon avatar = new ImageIcon(getClass().getResource("/Avatares/" + avatarPath));
+                Jugador jugador = new Jugador(nombre, color, avatar);
+                VistaLobby vistaLobby = new VistaLobby(jugador, 0); // El tamaño lo define el host
+                vistaLobby.setVisible(true);
+
+                vista.dispose();
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(vista, "Error al unirse al servidor.");
+            }
+        });
     }
 
 }

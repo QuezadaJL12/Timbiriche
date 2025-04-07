@@ -4,6 +4,7 @@
  */
 package mvcLobby;
 
+import com.mycompany.blackboard.interfaces.VistaLobbyListener;
 import com.mycompany.blackboard.modelo.Jugador;
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +16,12 @@ import mvcEditarPerfil.VistaEditarPerfil;
 import mvcEditarPerfil.PerfilEditadoListener;
 
 
-public class VistaLobby extends JFrame {
+public class VistaLobby extends JFrame implements VistaLobbyListener  {
+    
+    @Override
+    public void jugadorListoRecibido(Jugador jugador) {
+        agregarJugador(jugador); //  hace validación y carga visual
+    }
 
     private final ArrayList<Jugador> jugadores = new ArrayList<>();
     private final Set<Color> coloresUsados = new HashSet<>();
@@ -57,6 +63,26 @@ public class VistaLobby extends JFrame {
             }
         }
         return Color.GRAY;
+    }
+    
+    public void agregarJugador(Jugador jugador) {
+        //  Evita duplicados por nombre
+        for (Jugador j : jugadores) {
+            if (j.getNombre().equalsIgnoreCase(jugador.getNombre())) {
+                System.out.println("Jugador duplicado: " + jugador.getNombre());
+                return;
+            }
+        }
+
+        // Límite de 4
+        if (jugadores.size() >= 4) {
+            JOptionPane.showMessageDialog(this, "Ya hay 4 jugadores conectados.");
+            return;
+        }
+
+        jugadores.add(jugador);
+        cargarJugador(jugadores.size() - 1, jugador);
+        verificarContinuar();
     }
 
     public void cargarJugador(int index, Jugador jugador) {
@@ -103,15 +129,28 @@ public class VistaLobby extends JFrame {
         }
     }
 
-    public void agregarJugadorDemo(String nombre, ImageIcon icono) {
-        Color color = asignarColorDisponible();
-        Jugador jugador = new Jugador(nombre, color, icono);
-        agregarJugador(jugador);
-    }
+   public void limpiarLobby() {
+        jugadores.clear();
+        coloresUsados.clear();
 
-    public void agregarJugador(Jugador jugador) {
-        jugadores.add(jugador);
-        cargarJugador(jugadores.size() - 1, jugador);
+        LblNombre.setText("(Nombre)");
+        BtnImgPlayer.setIcon(null);
+        LblColorP.setBackground(Color.GRAY);
+
+        LblNombre2.setText("(Nombre)");
+        BtnImgPlayer2.setIcon(null);
+        LblColorP2.setBackground(Color.GRAY);
+
+        LblNombre3.setText("(Nombre)");
+        BtnImgPlayer3.setIcon(null);
+        LblColorP3.setBackground(Color.GRAY);
+
+        LblNombre4.setText("(Nombre)");
+        BtnImgPlayer4.setIcon(null);
+        LblColorP4.setBackground(Color.GRAY);
+
+        BtnContinuar.setEnabled(false);
+        lblContador.setText("");
     }
 
     public JButton getBtnListo() {
@@ -128,6 +167,10 @@ public class VistaLobby extends JFrame {
 
     public JButton getBtnEditar() {
         return BtnEditar;
+    }
+
+    public ArrayList<Jugador> getJugadores() {
+        return jugadores;
     }
 
     @SuppressWarnings("unchecked")
@@ -423,4 +466,7 @@ public class VistaLobby extends JFrame {
     private javax.swing.JButton timbi;
     // End of variables declaration//GEN-END:variables
 
+    
+    
+    
 }
