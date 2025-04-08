@@ -5,8 +5,7 @@
 package com.mycompany.blackboard.eventos;
 
 import com.mycompany.blackboard.Evento;
-import com.mycompany.blackboard.Evento;
-import com.mycompany.blackboard.modelo.JugadorRed;
+import com.mycompany.blackboard.modelo.Jugador;
 import java.io.Serializable;
 
 /**
@@ -15,14 +14,14 @@ import java.io.Serializable;
  */
 public class EventoJugadorListo extends Evento implements Serializable {
 
-    private final JugadorRed jugador;
+    private final Jugador jugador;
 
-    public EventoJugadorListo(JugadorRed jugador) {
+    public EventoJugadorListo(Jugador jugador) {
         super("JUGADOR_LISTO");
         this.jugador = jugador;
     }
 
-    public JugadorRed getJugador() {
+    public Jugador getJugador() {
         return jugador;
     }
 

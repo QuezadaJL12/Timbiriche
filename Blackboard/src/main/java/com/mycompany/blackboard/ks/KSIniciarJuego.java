@@ -6,10 +6,12 @@ package com.mycompany.blackboard.ks;
 
 import com.mycompany.blackboard.Blackboard;
 import com.mycompany.blackboard.Evento;
-import com.mycompany.blackboard.eventos.EventoIniciarJuego;
 import com.mycompany.blackboard.KnowledgeSource;
-import java.util.function.Consumer;
+import com.mycompany.blackboard.eventos.EventoIniciarPartida;
+import com.mycompany.blackboard.modelo.Jugador;
+import mvcJuego.VistaJuego;
 
+import java.util.List;
 
 /**
  *
@@ -17,17 +19,18 @@ import java.util.function.Consumer;
  */
 public class KSIniciarJuego extends KnowledgeSource {
 
-    private final Consumer<Void> accionIniciar;
-
-    public KSIniciarJuego(Consumer<Void> accionIniciar) {
-        this.accionIniciar = accionIniciar;
-    }
-
     @Override
     public void procesarEvento(Evento evento, Blackboard blackboard) {
-        if (evento instanceof EventoIniciarJuego) {
-            System.out.println("Recibido EventoIniciarJuego. Ejecutando acción...");
-            accionIniciar.accept(null);
+        if (evento instanceof EventoIniciarPartida ev) {
+            List<Jugador> jugadores = ev.getJugadores();
+            int tamañoTablero = ev.getTamañoTablero();
+
+            System.out.println("Iniciando juego con " + jugadores.size() + " jugadores.");
+
+            Jugador jugadorLocal = jugadores.get(0);
+
+            VistaJuego vistaJuego = new VistaJuego(jugadores, tamañoTablero, jugadorLocal);
+            vistaJuego.setVisible(true);
         }
     }
 

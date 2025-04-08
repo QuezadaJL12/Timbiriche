@@ -5,30 +5,27 @@
 package com.mycompany.blackboard.ks;
 
 import com.mycompany.blackboard.Blackboard;
-import com.mycompany.blackboard.Evento;
-import com.mycompany.blackboard.eventos.EventoIniciarPartida;
 import com.mycompany.blackboard.KnowledgeSource;
-
-
-import javax.swing.JButton;
-
+import com.mycompany.blackboard.eventos.EventoJugadorListo;
+import com.mycompany.blackboard.modelo.Jugador;
+import com.mycompany.blackboard.Evento;
 /**
  *
  * @author joseq
  */
 public class KSActivarBotonIniciar extends KnowledgeSource {
     
-    private final JButton botonIniciar;
+   private int jugadoresMinimos;
 
-    public KSActivarBotonIniciar(JButton botonIniciar) {
-        this.botonIniciar = botonIniciar;
+    public KSActivarBotonIniciar(int jugadoresMinimos) {
+        this.jugadoresMinimos = jugadoresMinimos;
     }
 
     @Override
     public void procesarEvento(Evento evento, Blackboard blackboard) {
-        if (evento instanceof EventoIniciarPartida) {
-            botonIniciar.setEnabled(true);
-            System.out.println("Botón 'Iniciar partida' habilitado.");
+        if (evento instanceof EventoJugadorListo ev) {
+            System.out.println("[KSActivarBotonIniciar] Jugador listo: " + ev.getJugador().getNombre());
+            // Aquí podras emitir un nuevo evento si el total de listos >= jugadoresMinimos
         }
     }
     

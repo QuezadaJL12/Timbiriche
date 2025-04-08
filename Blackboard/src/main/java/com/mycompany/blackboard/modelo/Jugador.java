@@ -16,14 +16,16 @@ public class Jugador implements Serializable {
 
     private String nombre;
     private Color color;
-    private ImageIcon avatar;
+    private String rutaAvatar; // Ahora guardamos la ruta
+    private transient ImageIcon avatar; // Evitamos que se serialice directamente
     private boolean listo;
 
-    public Jugador(String nombre, Color color, ImageIcon avatar) {
+    public Jugador(String nombre, String colorHex, String rutaAvatar, boolean listo) {
         this.nombre = nombre;
-        this.color = color;
-        this.avatar = avatar;
-        this.listo = false;
+        this.color = Color.decode(colorHex);
+        this.rutaAvatar = rutaAvatar;
+        this.avatar = new ImageIcon(getClass().getResource("/Avatares/" + rutaAvatar));
+        this.listo = listo;
     }
 
     public String getNombre() {
@@ -42,6 +44,15 @@ public class Jugador implements Serializable {
         this.color = color;
     }
 
+    public String getRutaAvatar() {
+        return rutaAvatar;
+    }
+
+    public void setRutaAvatar(String rutaAvatar) {
+        this.rutaAvatar = rutaAvatar;
+        this.avatar = new ImageIcon(getClass().getResource("/Avatares/" + rutaAvatar));
+    }
+
     public ImageIcon getAvatar() {
         return avatar;
     }
@@ -57,25 +68,24 @@ public class Jugador implements Serializable {
     public void setListo(boolean listo) {
         this.listo = listo;
     }
-    
+
     @Override
-public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null || getClass() != obj.getClass()) return false;
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
 
-    Jugador jugador = (Jugador) obj;
-    return nombre.equals(jugador.nombre)
-            && color.equals(jugador.color)
-            && avatar.toString().equals(jugador.avatar.toString());
-}
+        Jugador jugador = (Jugador) obj;
+        return nombre.equals(jugador.nombre)
+                && color.equals(jugador.color)
+                && rutaAvatar.equals(jugador.rutaAvatar);
+    }
 
-@Override
-public int hashCode() {
-    int result = nombre.hashCode();
-    result = 31 * result + color.hashCode();
-    result = 31 * result + avatar.toString().hashCode();
-    return result;
-}
-
+    @Override
+    public int hashCode() {
+        int result = nombre.hashCode();
+        result = 31 * result + color.hashCode();
+        result = 31 * result + rutaAvatar.hashCode();
+        return result;
+    }
 
 }
