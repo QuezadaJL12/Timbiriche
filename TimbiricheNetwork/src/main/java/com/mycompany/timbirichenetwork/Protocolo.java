@@ -1,13 +1,18 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.timbirichenetwork;
 
-/**
- *
- * @author joseq
- */
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 public class Protocolo {
-    
+    private static final Gson GSON = new GsonBuilder().create();
+
+    /** Serializa un EventoRed a JSON (una línea). */
+    public static String encode(EventoRed ev) {
+        return GSON.toJson(ev);
+    }
+
+    /** Deserializa JSON a un EventoRed. */
+    public static EventoRed decode(String json) {
+        return GSON.fromJson(json, EventoRed.class);
+    }
 }

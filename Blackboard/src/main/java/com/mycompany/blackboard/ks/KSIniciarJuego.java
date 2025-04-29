@@ -4,34 +4,57 @@
  */
 package com.mycompany.blackboard.ks;
 
-import com.mycompany.blackboard.Blackboard;
-import com.mycompany.blackboard.Evento;
-import com.mycompany.blackboard.KnowledgeSource;
-import com.mycompany.blackboard.eventos.EventoIniciarPartida;
 import com.mycompany.blackboard.modelo.Jugador;
-import mvcJuego.VistaJuego;
+import mvcJuego.MainJuego;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 
 /**
  *
  * @author joseq
  */
-public class KSIniciarJuego extends KnowledgeSource {
+public class KSIniciarJuego {
 
-    @Override
-    public void procesarEvento(Evento evento, Blackboard blackboard) {
-        if (evento instanceof EventoIniciarPartida ev) {
-            List<Jugador> jugadores = ev.getJugadores();
-            int tamañoTablero = ev.getTamañoTablero();
+    private JTextField txtTamanio;
+    private JButton btnIniciar;
+    private JPanel panelPrincipal;
 
-            System.out.println("Iniciando juego con " + jugadores.size() + " jugadores.");
+    /**
+     * @param jugadores Lista de jugadores ya registrados en el lobby.
+     */
+    public KSIniciarJuego(List<Jugador> jugadores) {
+        // Construye tu UI (NetBeans GUI builder o a mano)
+        JFrame frame = new JFrame("Iniciar Juego");
+        frame.setContentPane(panelPrincipal);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
 
-            Jugador jugadorLocal = jugadores.get(0);
+        // Listener para el botón Iniciar
+        btnIniciar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    int tamañoTablero = Integer.parseInt(txtTamanio.getText().trim());
+                    // Arranca la partida local MVC sin red:
+                    SwingUtilities.invokeLater(()
+                            -> MainJuego.mainCon(jugadores, tamañoTablero)
+                    );
+                    frame.dispose();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(
+                            frame,
+                            "Introduce un número válido para el tamaño del tablero.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                }
+            }
+        });
 
-            VistaJuego vistaJuego = new VistaJuego(jugadores, tamañoTablero, jugadorLocal);
-            vistaJuego.setVisible(true);
-        }
+        frame.setVisible(true);
     }
-
 }

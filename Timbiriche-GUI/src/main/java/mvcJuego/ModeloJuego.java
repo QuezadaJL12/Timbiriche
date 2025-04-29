@@ -4,10 +4,10 @@
  */
 package mvcJuego;
 
-import Model.Cuadro;
-import Model.Linea;
+import blackboard.IV;
 import com.mycompany.blackboard.modelo.Jugador;
-import java.util.List;
+
+import java.util.*;
 
 /**
  *
@@ -16,140 +16,109 @@ import java.util.List;
 public class ModeloJuego {
 
     private final List<Jugador> jugadores;
-    private final int gridSize;
-    private final Linea[][] lineas;
-    private final Cuadro[][] cuadros;
+    private final Map<Jugador, Integer> puntuaciones;
+    private final int tamaño;
+    private int turnoIdx = 0;
 
-    private int puntosX = 0;
-    private int puntosO = 0;
-    private String jugadorActual = "X";
+    // Observadores MVC
+    private final List<IV<ModeloJuego>> observers = new ArrayList<>();
 
-    public ModeloJuego(List<Jugador> jugadores, int tamanioTablero) {
-        this.jugadores = jugadores;
+    // Estado de aristas y cuadros (como antes)...
+    private final boolean[][] hEdgesTaken;
+    private final boolean[][] vEdgesTaken;
+    private final String[][] hEdgesOwnerColor;
+    private final String[][] vEdgesOwnerColor;
+    private final boolean[][] squaresClaimed;
+    private final String[][] squaresOwnerColor;
 
-        switch (tamanioTablero) {
-            case 10 ->
-                this.gridSize = 3;
-            case 20 ->
-                this.gridSize = 6;
-            case 30 ->
-                this.gridSize = 9;
-            default ->
-                this.gridSize = 3;
+    public ModeloJuego(List<Jugador> jugadores, int tamaño) {
+        this.jugadores = new ArrayList<>(jugadores);
+        this.tamaño = tamaño;
+        this.puntuaciones = new HashMap<>();
+        for (Jugador j : jugadores) {
+            puntuaciones.put(j, 0);
         }
 
-        this.lineas = new Linea[gridSize * 2 + 1][gridSize * 2 + 1];
-        this.cuadros = new Cuadro[gridSize][gridSize];
+        hEdgesTaken = new boolean[tamaño][tamaño - 1];
+        vEdgesTaken = new boolean[tamaño - 1][tamaño];
+        hEdgesOwnerColor = new String[tamaño][tamaño - 1];
+        vEdgesOwnerColor = new String[tamaño - 1][tamaño];
+        squaresClaimed = new boolean[tamaño - 1][tamaño - 1];
+        squaresOwnerColor = new String[tamaño - 1][tamaño - 1];
     }
 
-    public void inicializarTablero() {
-        for (int i = 0; i < gridSize * 2 + 1; i++) {
-            for (int j = 0; j < gridSize * 2 + 1; j++) {
-                if (i % 2 == 0 && j % 2 == 1 || i % 2 == 1 && j % 2 == 0) {
-                    lineas[i][j] = new Linea();
-                }
-            }
+    public void addObserver(IV<ModeloJuego> obs) {
+        observers.add(obs);
+    }
+
+    private void notifyObservers() {
+        observers.forEach(o -> o.update(this));
+    }
+
+    public Jugador getJugadorActual() {
+        return jugadores.get(turnoIdx);
+    }
+
+    public int getPuntuacion(Jugador j) {
+        return puntuaciones.getOrDefault(j, 0);
+    }
+
+    public int getTurnoIndex() {
+        return turnoIdx;
+    }
+
+    /**
+     * Permite fijar el turno (p.ej. al recibir TURN por red)
+     */
+    public void setTurno(int idx) {
+        this.turnoIdx = idx;
+        notifyObservers();
+    }
+
+    public boolean isEdgeTaken(int y1, int x1, int y2, int x2) {
+        // … tu implementación …
+        if (y1 == y2) {
+            return hEdgesTaken[y1][Math.min(x1, x2)];
+        } else {
+            return vEdgesTaken[Math.min(y1, y2)][x1];
         }
+    }
 
-        for (int i = 0; i < gridSize; i++) {
-            for (int j = 0; j < gridSize; j++) {
-                cuadros[i][j] = new Cuadro();
-            }
+    public String getEdgeOwnerColorHex(int y1, int x1, int y2, int x2) {
+        if (y1 == y2) {
+            return hEdgesOwnerColor[y1][Math.min(x1, x2)];
+        } else {
+            return vEdgesOwnerColor[Math.min(y1, y2)][x1];
         }
     }
 
-    public boolean procesarJugada(int x, int y) {
-        if (lineas[x][y] == null || lineas[x][y].estaMarcada()) {
-            return false;
-        }
-
-        lineas[x][y].marcar();
-
-        boolean cuadroCompletado = comprobarCuadrosAdyacentes(x, y);
-
-        if (!cuadroCompletado) {
-            cambiarTurno();
-        }
-
-        return cuadroCompletado;
+    public boolean isSquareClaimed(int y, int x) {
+        return squaresClaimed[y][x];
     }
 
-    private boolean comprobarCuadrosAdyacentes(int x, int y) {
-        boolean completado = false;
-
-        if (x % 2 == 0) { // línea horizontal
-            int filaSup = (x / 2) - 1;
-            int filaInf = x / 2;
-            int col = y / 2;
-
-            if (filaSup >= 0 && filaSup < gridSize) {
-                completado |= comprobarCuadro(filaSup, col);
-            }
-            if (filaInf < gridSize) {
-                completado |= comprobarCuadro(filaInf, col);
-            }
-
-        } else { // línea vertical
-            int fila = x / 2;
-            int colIzq = (y / 2) - 1;
-            int colDer = y / 2;
-
-            if (colIzq >= 0 && colIzq < gridSize) {
-                completado |= comprobarCuadro(fila, colIzq);
-            }
-            if (colDer < gridSize) {
-                completado |= comprobarCuadro(fila, colDer);
-            }
-        }
-
-        return completado;
+    public String getSquareOwnerColorHex(int y, int x) {
+        return squaresOwnerColor[y][x];
     }
 
-    private boolean comprobarCuadro(int i, int j) {
-        if (cuadros[i][j].getJugador().isEmpty()
-                && lineas[i * 2][j * 2 + 1].estaMarcada()
-                && lineas[i * 2 + 2][j * 2 + 1].estaMarcada()
-                && lineas[i * 2 + 1][j * 2].estaMarcada()
-                && lineas[i * 2 + 1][j * 2 + 2].estaMarcada()) {
-
-            cuadros[i][j].asignarJugador(jugadorActual);
-
-            if (jugadorActual.equals("X")) {
-                puntosX++;
-            } else {
-                puntosO++;
-            }
-
-            return true;
-        }
-        return false;
+    public void claimEdge(int y1, int x1, int y2, int x2) {
+        Jugador actual = getJugadorActual();
+        String color = actual.getColorHex();
+        // … marca arista y cuadros, actualiza puntuaciones …
+        // tras procesar, si no completó cuadro:
+        // turnoIdx = (turnoIdx+1) % jugadores.size();
+        notifyObservers();
     }
 
-    private void cambiarTurno() {
-        jugadorActual = jugadorActual.equals("X") ? "O" : "X";
+    public boolean isGameOver() {
+        int total = (tamaño - 1) * (tamaño - 1);
+        int suma = puntuaciones.values().stream().mapToInt(i -> i).sum();
+        return suma >= total;
     }
 
-    public List<Jugador> getJugadores() {
-        return jugadores;
-    }
-
-    public int getGridSize() {
-        return gridSize;
-    }
-
-    public String getJugadorActual() {
-        return jugadorActual;
-    }
-
-    public int getPuntosX() {
-        return puntosX;
-    }
-
-    public int getPuntosO() {
-        return puntosO;
-    }
-
-    public boolean estaJuegoTerminado() {
-        return (puntosX + puntosO) == (gridSize * gridSize);
+    public Jugador getGanador() {
+        return puntuaciones.entrySet()
+                .stream()
+                .max(Comparator.comparingInt(Map.Entry::getValue))
+                .get().getKey();
     }
 }

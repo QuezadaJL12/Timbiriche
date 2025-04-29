@@ -1,213 +1,137 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package mvcJuego;
 
+import blackboard.IV;
 import com.mycompany.blackboard.modelo.Jugador;
+
+
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import mvcJuego.Componentes.DotPanel;
+import mvcJuego.Componentes.EdgeButton;
+import mvcJuego.Componentes.SquarePanel;
 
 /**
  *
- * @author Serva
+ * @author joseq
  */
-public class VistaJuego extends javax.swing.JFrame {
+public class VistaJuego extends JPanel implements IV<ModeloJuego> {
 
     private ControladorJuego controlador;
-    private JPanel panelJuego;
-    private JLabel lblJugadorActual;
-    private JLabel lblPuntuacionX;
-    private JLabel lblPuntuacionO;
+    private final ModeloJuego modelo;
+    private final List<Jugador> jugadores;
+    private final int tamaño;
 
-    private List<Jugador> jugadores;
-    private int tamañoTablero;
+    private final JLabel lblTurno = new JLabel("", SwingConstants.CENTER);
+    private final JPanel boardPanel;
+    private final JPanel pnlPuntos = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
+    private final JLabel lblGanador = new JLabel("", SwingConstants.CENTER);
 
-    // Constructor cuando ya tienes el controlador externo (opcional)
-    public VistaJuego(ControladorJuego controlador) {
-        this.controlador = controlador;
-        initComponents();
-        configurarInterfaz();
+    private final EdgeButton[][] hEdges;
+    private final EdgeButton[][] vEdges;
+    private final SquarePanel[][] squares;
 
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowOpened(java.awt.event.WindowEvent evt) {
-                controlador.iniciarJuego();
-            }
-        });
-    }
-
-    private void BtnContinuarActionPerformed(java.awt.event.ActionEvent evt) {
-        long listos = jugadores.stream().filter(Jugador::isListo).count();
-
-        if (listos >= 2) {
-            List<Jugador> jugadoresListos = jugadores.stream()
-                    .filter(Jugador::isListo)
-                    .toList();
-
-            Main.MainJuego.iniciar(jugadoresListos, tamañoTablero);
-            this.dispose(); // Cierra la ventana del lobby
-
-        } else {
-            JOptionPane.showMessageDialog(this, "Se requieren al menos 2 jugadores listos.");
-        }
-    }
-
-    // Constructor principal: crea controlador y genera tablero
-    public VistaJuego(List<Jugador> jugadores, int tamañoTablero) {
-        initComponents();
+    public VistaJuego(ModeloJuego modelo, List<Jugador> jugadores, int tamaño) {
+        super(new BorderLayout(5, 5));
+        this.modelo = modelo;
         this.jugadores = jugadores;
-        this.tamañoTablero = tamañoTablero;
+        this.tamaño = tamaño;
 
-        configurarInterfaz();
+        // Panel de puntuaciones
+        for (Jugador j : jugadores) {
+            JLabel lp = new JLabel(j.getNombre() + ": 0");
+            lp.setName("puntos_" + j.getNombre());
+            pnlPuntos.add(lp);
+        }
 
-        // Crear controlador automáticamente
-        this.controlador = new ControladorJuego(this, jugadores, tamañoTablero);
+        // Construcción del tablero
+        int grid = tamaño * 2 - 1;
+        boardPanel = new JPanel(new GridLayout(grid, grid, 2, 2));
+        hEdges = new EdgeButton[tamaño][tamaño - 1];
+        vEdges = new EdgeButton[tamaño - 1][tamaño];
+        squares = new SquarePanel[tamaño - 1][tamaño - 1];
 
-        // Mostrar el tablero generado
-        mostrarTablero(tamañoTablero);
-
-        // Iniciar juego cuando abre
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowOpened(java.awt.event.WindowEvent evt) {
-                controlador.iniciarJuego();
-            }
-        });
-    }
-
-    private void configurarInterfaz() {
-        JPanel panelInfo = new JPanel(new GridLayout(1, 4));
-        panelInfo.setBackground(Color.WHITE);
-
-        lblJugadorActual = new JLabel("Turno: Jugador X", SwingConstants.CENTER);
-        lblPuntuacionX = new JLabel("Jugador X: 0", SwingConstants.CENTER);
-        lblPuntuacionO = new JLabel("Jugador O: 0", SwingConstants.CENTER);
-
-        panelInfo.add(lblPuntuacionX);
-        panelInfo.add(lblJugadorActual);
-        panelInfo.add(lblPuntuacionO);
-
-        panelJuego = new JPanel();
-        panelJuego.setBackground(Color.WHITE);
-        panelJuego.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        JPanel panelCentral = new JPanel(new BorderLayout());
-        panelCentral.add(panelInfo, BorderLayout.NORTH);
-        panelCentral.add(panelJuego, BorderLayout.CENTER);
-
-        JButton btnSalir = new JButton("Salir del juego");
-        btnSalir.addActionListener(e -> {
-            if (JOptionPane.showConfirmDialog(this, "¿Deseas salir?", "Confirmar", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                dispose();
-            }
-        });
-
-        jPanel1.setLayout(new BorderLayout());
-
-        JPanel panelInferior = new JPanel();
-        panelInferior.setOpaque(false);
-        panelInferior.add(btnSalir);
-        panelCentral.add(panelInferior, BorderLayout.SOUTH);
-
-        jPanel1.add(panelCentral, BorderLayout.CENTER);
-
-        setTitle("Timbiriche - En partida");
-        setSize(900, 800);
-        setLocationRelativeTo(null);
-    }
-
-    public void mostrarTablero(int gridSize) {
-        panelJuego.removeAll();
-        panelJuego.setLayout(new GridLayout(gridSize * 2 + 1, gridSize * 2 + 1));
-
-        for (int i = 0; i < gridSize * 2 + 1; i++) {
-            for (int j = 0; j < gridSize * 2 + 1; j++) {
-                if (i % 2 == 0 && j % 2 == 0) {
-                    JLabel punto = new JLabel("•", SwingConstants.CENTER);
-                    punto.setFont(new Font("Arial", Font.BOLD, 24));
-                    panelJuego.add(punto);
-                } else if ((i % 2 == 0 && j % 2 == 1) || (i % 2 == 1 && j % 2 == 0)) {
-                    JButton btnLinea = new JButton();
-                    btnLinea.setBackground(Color.LIGHT_GRAY);
-                    final int x = i, y = j;
-                    btnLinea.addActionListener(e -> controlador.seleccionarLinea(x, y));
-                    panelJuego.add(btnLinea);
+        for (int r = 0; r < grid; r++) {
+            for (int c = 0; c < grid; c++) {
+                if (r % 2 == 0 && c % 2 == 0) {
+                    boardPanel.add(new DotPanel());
+                } else if (r % 2 == 0) {
+                    int y = r / 2, x = c / 2;
+                    EdgeButton btn = new EdgeButton(y, x, y, x + 1);
+                    hEdges[y][x] = btn;
+                    boardPanel.add(btn);
+                } else if (c % 2 == 0) {
+                    int y = r / 2, x = c / 2;
+                    EdgeButton btn = new EdgeButton(y, x, y + 1, x);
+                    vEdges[y][x] = btn;
+                    boardPanel.add(btn);
                 } else {
-                    JLabel cuadro = new JLabel();
-                    cuadro.setOpaque(true);
-                    cuadro.setBackground(Color.WHITE);
-                    cuadro.setHorizontalAlignment(SwingConstants.CENTER);
-                    cuadro.setFont(new Font("Arial", Font.BOLD, 16));
-                    panelJuego.add(cuadro);
+                    int y = r / 2, x = c / 2;
+                    SquarePanel sq = new SquarePanel();
+                    squares[y][x] = sq;
+                    boardPanel.add(sq);
                 }
             }
         }
 
-        panelJuego.revalidate();
-        panelJuego.repaint();
+        // Montaje de la vista
+        add(lblTurno, BorderLayout.NORTH);
+        add(boardPanel, BorderLayout.CENTER);
+        add(pnlPuntos, BorderLayout.SOUTH);
+        add(lblGanador, BorderLayout.PAGE_END);
+
+        // *** Aquí se añade el borde/margen alrededor de todo el panel ***
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
     }
 
-    public void actualizarEstado(String jugador, int puntosX, int puntosO) {
-        lblJugadorActual.setText("Turno: Jugador " + jugador);
-        lblPuntuacionX.setText("Jugador X: " + puntosX);
-        lblPuntuacionO.setText("Jugador O: " + puntosO);
+    public void setControlador(ControladorJuego controlador) {
+        this.controlador = controlador;
+        // Inyección en aristas
+        for (int y = 0; y < tamaño; y++) {
+            for (int x = 0; x < tamaño - 1; x++) {
+                if (hEdges[y][x] != null) {
+                    hEdges[y][x].setController(controlador);
+                }
+            }
+        }
+        for (int y = 0; y < tamaño - 1; y++) {
+            for (int x = 0; x < tamaño; x++) {
+                if (vEdges[y][x] != null) {
+                    vEdges[y][x].setController(controlador);
+                }
+            }
+        }
     }
 
-    public void mostrarGanador(String ganador) {
-        JOptionPane.showMessageDialog(this,
-                "¡Fin del juego!\nGanador: " + ganador,
-                "Juego terminado",
-                JOptionPane.INFORMATION_MESSAGE);
+    @Override
+    public void update(ModeloJuego m) {
+        // Turno
+        lblTurno.setText("Turno de: " + m.getJugadorActual().getNombre());
+        // Puntuaciones
+        for (Jugador j : jugadores) {
+            int pts = m.getPuntuacion(j);
+            for (Component comp : pnlPuntos.getComponents()) {
+                if (comp instanceof JLabel && comp.getName().equals("puntos_" + j.getNombre())) {
+                    ((JLabel) comp).setText(j.getNombre() + ": " + pts);
+                }
+            }
+        }
+        // Aristas y cuadros...
+        // (métodos isEdgeTaken, isSquareClaimed, etc.)
+        // Fin de juego
+        if (m.isGameOver()) {
+            String msg = String.format(
+                    "¡El ganador es %s con %d puntos!",
+                    m.getGanador().getNombre(),
+                    m.getPuntuacion(m.getGanador())
+            );
+            lblGanador.setText(msg);
+            JOptionPane.showMessageDialog(this, msg, "Fin de la partida", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
-
-    public List<Jugador> getJugadores() {
-        return jugadores;
-    }
-
-    public int getTamañoTablero() {
-        return tamañoTablero;
-    }
-
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        jPanel1 = new javax.swing.JPanel();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        jPanel1.setBackground(new java.awt.Color(153, 153, 153));
-        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1245, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1248, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
-    // End of variables declaration//GEN-END:variables
 }

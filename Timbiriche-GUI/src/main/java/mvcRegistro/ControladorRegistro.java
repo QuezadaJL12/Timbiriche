@@ -4,12 +4,7 @@
  */
 package mvcRegistro;
 
-
 import com.mycompany.blackboard.modelo.Jugador;
-import mvcTamanoTablero.VistaTamanoTablero;
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import javax.swing.*;
 
 /**
@@ -17,84 +12,47 @@ import javax.swing.*;
  * @author joseq
  */
 public class ControladorRegistro {
-   private final VistaRegistro vista;
+
     private final ModeloRegistro modelo;
-    private static final ArrayList<Color> colores = new ArrayList<>();
-    private static int colorIndex = 0;
+    private final VistaRegistro vista;
+    private final JFrame frame;
 
-    public ControladorRegistro(VistaRegistro vista, ModeloRegistro modelo) {
-        this.vista = vista;
+    public ControladorRegistro(ModeloRegistro modelo, VistaRegistro vista) {
         this.modelo = modelo;
+        this.vista = vista;
 
-        inicializarColores();
-        cargarAvatares();
+        // 1) Registro de la vista como observadora del modelo
+        modelo.addObserver(vista);
 
-        // Enlazar botón registrar
-        this.vista.getBtnRegistrar().addActionListener(this::registrarJugador);
+        // 2) Conectar controlador y vista
+        vista.setControlador(this);
+
+        // 3) Crear ventana y mostrar
+        frame = new JFrame("Registro de Jugador");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setContentPane(vista);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 
-    private void inicializarColores() {
-        colores.add(Color.BLUE);
-        colores.add(Color.RED);
-        colores.add(Color.GREEN.darker());
-        colores.add(Color.MAGENTA.darker());
-    }
+    /**
+     * Se llama al pulsar "Registrar"
+     */
+    public void onRegistrar() {
+        // Actualizar modelo (dispara notifyObservers y refresca la vista)
+        modelo.setNombre(vista.getNombre());
+        modelo.setColorHex(vista.getColorHex());
+        modelo.setRutaAvatar(vista.getRutaAvatar());
 
-    private void cargarAvatares() {
-        String[] nombresAvatares = {
-            "GATO.png", "LEIA.png", "LOBO.png", "PINGUINO.png",
-            "RANA.png", "ROBOCOB.png"
-        };
+        // Crear el Jugador
+        Jugador jugador = modelo.crearJugador();
 
-        JPanel panel = vista.getPanelAvatares();
-        panel.removeAll(); // Limpiar por si ya hay algo
-        panel.setLayout(new java.awt.GridLayout(2, 3, 10, 10)); // Organiza los botones
+        // Cerrar registro y pasar al siguiente módulo
+        frame.dispose();
 
-        for (String nombre : nombresAvatares) {
-            ImageIcon icon = new ImageIcon(getClass().getResource("/Avatares/" + nombre));
-            JButton btn = new JButton(icon);
-            btn.setContentAreaFilled(false);
-            btn.setBorderPainted(false);
-            btn.setFocusPainted(false);
-
-            btn.addActionListener(e -> {
-                modelo.setAvatarSeleccionado(icon);
-                JOptionPane.showMessageDialog(vista, "Avatar seleccionado: " + nombre);
-            });
-
-            panel.add(btn);
-        }
-
-        panel.revalidate();
-        panel.repaint();
-    }
-    private static final ArrayList<String> nombresRegistrados = new ArrayList<>();
-
-    private void registrarJugador(ActionEvent e) {
-        String nombre = vista.getTxtNombre().getText().trim();
-
-    if (nombre.isEmpty() || nombre.equalsIgnoreCase("Usuario")) {
-        JOptionPane.showMessageDialog(vista, "Ingresa un nombre válido.");
-        return;
-    }
-
-    if (nombresRegistrados.contains(nombre)) {
-        JOptionPane.showMessageDialog(vista, "Ese nombre ya está registrado. Intenta con otro.");
-        return;
-    }
-
-    if (modelo.getAvatarSeleccionado() == null) {
-        JOptionPane.showMessageDialog(vista, "Selecciona un avatar.");
-        return;
-    }
-
-    Color colorAsignado = colores.get(colorIndex++ % colores.size());
-    Jugador jugador = new Jugador(nombre, colorAsignado, modelo.getAvatarSeleccionado());
-
-    nombresRegistrados.add(nombre); // Guardar nombre para futuras validaciones
-
-    VistaTamanoTablero tablero = new VistaTamanoTablero(jugador);
-    tablero.setVisible(true);
-    vista.dispose();
+        // Ejemplo de llamada al siguiente controlador:
+        // new ControladorTamanoTablero(new ModeloTamanoTablero(jugador),
+        //                              new VistaTamanoTablero());
     }
 }

@@ -4,15 +4,20 @@
  */
 package mvcTamanoTablero;
 
-import com.mycompany.blackboard.eventos.EventoJugadorListo;
 import com.mycompany.blackboard.modelo.Jugador;
-import com.mycompany.blackboard.modelo.JugadorRed;
-import com.mycompany.timbirichenetwork.Cliente;
 import com.mycompany.timbirichenetwork.Servidor;
+import com.mycompany.timbirichenetwork.Cliente;
+import com.mycompany.timbirichenetwork.EventoRed;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import mvcLobby.ControladorLobbyJuego;
+import mvcLobby.ModeloLobbyJuego;
 import mvcLobby.VistaLobby;
 
 import javax.swing.*;
-import java.awt.*;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.List;
 
 /**
  *
@@ -20,72 +25,90 @@ import java.awt.*;
  */
 public class ControladorTamanoTablero {
 
-    private final VistaTamanoTablero vista;
     private final ModeloTamanoTablero modelo;
+    private final VistaTamanoTablero vista;
+    private final JFrame frame;
+    private final Jugador miJugador;
+    private boolean isHost = true;
 
-    public ControladorTamanoTablero(VistaTamanoTablero vista, ModeloTamanoTablero modelo) {
-        this.vista = vista;
+    private Servidor servidor;
+    private Cliente cliente;
+    private ControladorLobbyJuego ctrlLobby;
+    private final Gson gson = new Gson();
+
+    private static final String HOST = "localhost";
+    private static final int PUERTO = 8888;
+
+    public ControladorTamanoTablero(ModeloTamanoTablero modelo,
+            VistaTamanoTablero vista,
+            Jugador miJugador) {
         this.modelo = modelo;
+        this.vista = vista;
+        this.miJugador = miJugador;
 
-        configurarEventos();
+        modelo.addObserver(vista);
+        vista.setControlador(this);
+
+        frame = new JFrame("Seleccionar Tamaño");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setContentPane(vista);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 
-    private void configurarEventos() {
-        // 🎮 Botón para iniciar como servidor (host)
-        vista.getBtnServidor().addActionListener(e -> {
-            int tamaño = vista.getTamañoSeleccionado();
-            if (tamaño == 0) {
-                JOptionPane.showMessageDialog(vista, "Selecciona un tamaño de tablero.");
-                return;
-            }
-
-            try {
-                // Iniciar servidor
-                Servidor servidor = new Servidor();
-                servidor.iniciar(1234);
-
-                // Crear y mostrar VistaLobby
-                Jugador jugador = vista.getJugadorSeleccionado();
-                VistaLobby vistaLobby = new VistaLobby(jugador, tamaño);
-                vistaLobby.setVisible(true);
-
-                vista.dispose();
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(vista, "Error al iniciar el servidor.");
-            }
-        });
-
-        // 🤝 Botón para unirse como cliente
-        vista.getBtnUnirse().addActionListener(e -> {
-            try {
-                String nombre = vista.getNombreJugador();
-                String avatarPath = vista.getAvatarSeleccionado();
-                Color color = vista.getColorSeleccionado();
-                String colorHex = "#" + Integer.toHexString(color.getRGB()).substring(2);
-
-                // Conectar al servidor
-                Cliente cliente = new Cliente();
-                cliente.conectar("localhost", 1234); // Cambiar si es remoto
-
-                // Enviar evento del jugador
-                JugadorRed jugadorRed = new JugadorRed(nombre, colorHex, avatarPath, true);
-                cliente.enviar(new EventoJugadorListo(jugadorRed));
-
-                // Abrir VistaLobby del cliente
-                ImageIcon avatar = new ImageIcon(getClass().getResource("/Avatares/" + avatarPath));
-                Jugador jugador = new Jugador(nombre, color, avatar);
-                VistaLobby vistaLobby = new VistaLobby(jugador, 0); // El tamaño lo define el host
-                vistaLobby.setVisible(true);
-
-                vista.dispose();
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(vista, "Error al unirse al servidor.");
-            }
-        });
+    public void onSizeSelected(int tamaño) {
+        modelo.setTamaño(tamaño);
     }
 
+    public void onServidorSelected() {
+        isHost = true;
+    }
+
+    public void onUnirseSelected() {
+        isHost = false;
+    }
+
+    public void onContinuar() {
+        frame.dispose();
+        try {
+            if (isHost) {
+                servidor = new Servidor(PUERTO);
+                servidor.start();
+            }
+            cliente = new Cliente(HOST, PUERTO, this::handleLobbyEvent);
+            cliente.connect();
+
+            ModeloLobbyJuego ml = new ModeloLobbyJuego(modelo.getTamaño(), miJugador);
+            VistaLobby vl = new VistaLobby();
+            ctrlLobby = new ControladorLobbyJuego(ml, vl, cliente, gson, isHost);
+
+            cliente.send(EventoRed.join(gson.toJson(miJugador)));
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Error de red: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    private void handleLobbyEvent(EventoRed ev) {
+        switch (ev.getTipo()) {
+            case JOIN -> {
+                Jugador j = gson.fromJson(ev.getJugadorJson(), Jugador.class);
+                SwingUtilities.invokeLater(() -> ctrlLobby.onJugadorConectado(j));
+            }
+            case START -> {
+                Type listType = new TypeToken<List<Jugador>>() {
+                }.getType();
+                List<Jugador> todos = gson.fromJson(ev.getJugadorJson(), listType);
+                int t = ev.getTamañoTablero();
+                SwingUtilities.invokeLater(() -> ctrlLobby.onStart(todos, t));
+            }
+            default -> {
+            }
+        }
+    }
 }

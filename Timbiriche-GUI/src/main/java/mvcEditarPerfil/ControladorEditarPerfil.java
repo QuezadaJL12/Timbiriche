@@ -5,9 +5,13 @@
 package mvcEditarPerfil;
 
 import com.mycompany.blackboard.modelo.Jugador;
-import javax.swing.ImageIcon;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import util.ProfileStorage;
+import mvcTamanoTablero.ModeloTamanoTablero;
+import mvcTamanoTablero.VistaTamanoTablero;
+import mvcTamanoTablero.ControladorTamanoTablero;
+
+import javax.swing.*;
+import java.io.IOException;
 
 /**
  *
@@ -15,52 +19,80 @@ import java.awt.event.ActionListener;
  */
 public class ControladorEditarPerfil {
 
+    private final ModeloEditarPerfil modelo;
     private final VistaEditarPerfil vista;
-    private final Jugador jugador;
-    private final PerfilEditadoListener listener;
+    private final JFrame frame;
 
-    public ControladorEditarPerfil(VistaEditarPerfil vista, Jugador jugador, PerfilEditadoListener listener) {
-        this.vista = vista;
-        this.jugador = jugador;
-        this.listener = listener;
-        inicializarVista();
-        inicializarListeners();
+    /**
+     * Constructor principal: recibe el Jugador a editar
+     */
+    public ControladorEditarPerfil(Jugador jugadorOriginal) {
+        this.modelo = new ModeloEditarPerfil(jugadorOriginal);
+        this.vista = new VistaEditarPerfil();
+        modelo.addListener(vista);
+        vista.setControlador(this);
+
+        frame = new JFrame("Editar Perfil");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setContentPane(vista);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 
-    private void inicializarVista() {
-        vista.actualizarAvatarSeleccionado(jugador.getAvatar());
-        vista.getTxtNombre().setText(jugador.getNombre());
+    /**
+     * Constructor por defecto: jugador vacio con avatar GATO.png
+     */
+    public ControladorEditarPerfil() {
+        this(new Jugador("", "#000000", "GATO.png", false));
     }
 
-    private void inicializarListeners() {
-        vista.getBtnAceptar().addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String nombre = vista.getNombreIngresado();
-                ImageIcon avatar = vista.getAvatarSeleccionado();
+    /**
+     * Invocado por la vista al pulsar “Guardar”
+     */
+    public void onGuardar() {
+        Jugador updated = modelo.getJugadorOriginal();
 
-                if (nombre.isEmpty()) {
-                    vista.mostrarMensaje("Por favor ingresa tu nombre.");
-                    return;
-                }
+        // 1) Guardar en disco
+        try {
+            ProfileStorage.saveProfile(updated);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "No se pudo guardar el perfil: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
 
-                if (avatar == null) {
-                    vista.mostrarMensaje("Por favor selecciona un avatar.");
-                    return;
-                }
+        // 2) Cerrar esta ventana
+        frame.dispose();
 
-                jugador.setNombre(nombre);
-                jugador.setAvatar(avatar);
+        // 3) Arrancar selector de tamaño con el perfil cargado
+        ModeloTamanoTablero m = new ModeloTamanoTablero(updated);
+        VistaTamanoTablero v = new VistaTamanoTablero();
+        new ControladorTamanoTablero(m, v, updated);
+    }
 
-                if (listener != null) {
-                    listener.perfilEditado(jugador);
-                }
+    /**
+     * Invocado por la vista al pulsar “Cancelar”
+     */
+    public void onCancelar() {
+        frame.dispose();
+    }
 
-                vista.dispose();
-            }
-        });
+    /**
+     * Invocado por la vista al cambiar el texto del nombre
+     */
+    public void onNombreChanged(String nuevoNombre) {
+        modelo.setNombre(nuevoNombre);
+    }
 
-        vista.getBtnCancelar().addActionListener(e -> vista.dispose());
+    /**
+     * Invocado por la vista al cambiar el avatar
+     */
+    public void onAvatarChanged(String nuevaRuta) {
+        modelo.setRutaAvatar(nuevaRuta);
     }
 
 }

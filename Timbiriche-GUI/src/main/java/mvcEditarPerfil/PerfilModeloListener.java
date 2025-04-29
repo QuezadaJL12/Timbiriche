@@ -4,21 +4,17 @@
  */
 package mvcEditarPerfil;
 
+import blackboard.IV;
 import com.mycompany.blackboard.modelo.Jugador;
-import javax.swing.ImageIcon;
-
 
 /**
  *
  * @author joseq
  */
-public interface PerfilEditadoListener {
+public interface PerfilModeloListener extends IV<ModeloEditarPerfil> {
 
-   void perfilEditado(Jugador jugadorActualizado);
    
-  
+    
+    
 
 }
-
-
-  

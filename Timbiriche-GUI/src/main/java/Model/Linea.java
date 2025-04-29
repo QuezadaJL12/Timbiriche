@@ -9,17 +9,27 @@ package Model;
  * @author Serva
  */
 public class Linea {
-    private boolean marcada;
+   private boolean marcada;
 
+    /**
+     * Constructor que inicializa la línea como no marcada.
+     */
     public Linea() {
         this.marcada = false;
     }
 
-    public boolean estaMarcada() {
-        return marcada;
-    }
-
+    /**
+     * Marca la línea como ocupada.
+     */
     public void marcar() {
         this.marcada = true;
+    }
+
+    /**
+     * Verifica si la línea ya fue marcada.
+     * @return True si la línea está marcada, False si aún está libre.
+     */
+    public boolean estaMarcada() {
+        return marcada;
     }
 }

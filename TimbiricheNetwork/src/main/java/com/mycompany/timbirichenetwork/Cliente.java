@@ -4,11 +4,12 @@
  */
 package com.mycompany.timbirichenetwork;
 
-import com.mycompany.blackboard.BlackboardBridge;
-import com.mycompany.blackboard.Evento;
-
-import java.io.*;
-import java.net.*;
+import java.net.Socket;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
 
 /**
  *
@@ -16,33 +17,83 @@ import java.net.*;
  */
 public class Cliente {
 
-     private Socket socket;
-    private ObjectOutputStream out;
+    private final String host;
+    private final int puerto;
+    private Socket socket;
+    private BufferedReader in;
+    private BufferedWriter out;
+    private EventoRedListener listener;
 
-    public void conectar(String host, int puerto) throws IOException {
-        socket = new Socket(host, puerto);
-        out = new ObjectOutputStream(socket.getOutputStream());
+    /**
+     * Interfaz de callback para quien use el Cliente
+     */
+    public interface EventoRedListener {
 
-        // Inicia el hilo para recibir mensajes del servidor
-        new Thread(() -> escucharServidor()).start();
+        void onEvento(EventoRed ev);
     }
 
-    public void enviar(Evento evento) throws IOException {
-        out.writeObject(evento);
+    /**
+     * Constructor.
+     *
+     * @param host dirección del servidor
+     * @param puerto puerto del servidor
+     * @param listener listener inicial (puede ser null)
+     */
+    public Cliente(String host, int puerto, EventoRedListener listener) {
+        this.host = host;
+        this.puerto = puerto;
+        this.listener = listener;
+    }
+
+    /**
+     * Permite cambiar o asignar el listener tras la creación
+     */
+    public void setListener(EventoRedListener listener) {
+        this.listener = listener;
+    }
+
+    /**
+     * Conecta al servidor y arranca el hilo lector
+     */
+    public void connect() throws IOException {
+        socket = new Socket(host, puerto);
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        new Thread(this::readLoop).start();
+    }
+
+    /**
+     * Bucle que lee líneas JSON y notifica por callback
+     */
+    private void readLoop() {
+        try {
+            String line;
+            while ((line = in.readLine()) != null) {
+                EventoRed ev = Protocolo.decode(line);
+                if (listener != null) {
+                    listener.onEvento(ev);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Envía un EventoRed al servidor
+     */
+    public void send(EventoRed ev) throws IOException {
+        String msg = Protocolo.encode(ev);
+        out.write(msg);
+        out.newLine();
         out.flush();
     }
 
-    private void escucharServidor() {
-        try (ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
-            while (true) {
-                Evento evento = (Evento) in.readObject();
-                System.out.println("Evento recibido del servidor: " + evento.getTipo());
-                BlackboardBridge.recibirEventoDesdeRed(evento); 
-            }
-        } catch (Exception e) {
-            System.err.println("Error al recibir evento del servidor");
-            e.printStackTrace();
-        }
+    /**
+     * Cierra la conexión
+     */
+    public void disconnect() throws IOException {
+        socket.close();
     }
 
 }

@@ -4,8 +4,10 @@
  */
 package mvcEditarPerfil;
 
-import javax.swing.*;
 import com.mycompany.blackboard.modelo.Jugador;
+import blackboard.IV;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -13,20 +15,39 @@ import com.mycompany.blackboard.modelo.Jugador;
  */
 public class ModeloEditarPerfil {
 
-    private Jugador jugador;
+   private Jugador jugadorOriginal;
+    private final List<IV<ModeloEditarPerfil>> listeners = new ArrayList<>();
 
-    public ModeloEditarPerfil(Jugador jugador) {
-        this.jugador = jugador;
+    public ModeloEditarPerfil(Jugador jugadorOriginal) {
+        this.jugadorOriginal = jugadorOriginal;
     }
 
-    public Jugador getJugador() {
-        return jugador;
+    /** Suscribe un listener para cambios */
+    public void addListener(IV<ModeloEditarPerfil> l) {
+        listeners.add(l);
     }
 
-    public void actualizarPerfil(String nuevoNombre, ImageIcon nuevoAvatar) {
-    jugador.setNombre(nuevoNombre);
-    jugador.setAvatar(nuevoAvatar);
-}
+    /** Notifica a todos los listeners */
+    private void notifyListeners() {
+        for (IV<ModeloEditarPerfil> l : listeners) {
+            l.update(this);
+        }
+    }
 
+    /** Obtiene el Jugador a editar */
+    public Jugador getJugadorOriginal() {
+        return jugadorOriginal;
+    }
 
+    /** Cambia el nombre y notifica */
+    public void setNombre(String nombre) {
+        jugadorOriginal.setNombre(nombre);
+        notifyListeners();
+    }
+
+    /** Cambia la ruta de avatar y notifica */
+    public void setRutaAvatar(String rutaAvatar) {
+        jugadorOriginal.setRutaAvatar(rutaAvatar);
+        notifyListeners();
+    }
 }
