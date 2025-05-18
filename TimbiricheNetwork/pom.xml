@@ -22,7 +22,7 @@
             <artifactId>Blackboard</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        
         <!-- Gson para JSON -->
         <dependency>
             <groupId>com.google.code.gson</groupId>

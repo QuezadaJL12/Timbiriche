@@ -1,0 +1,16 @@
+com\mycompany\blackboard\BlackboardBridge.class
+com\mycompany\blackboard\KnowledgeSource.class
+com\mycompany\blackboard\ks\KSIniciarJuego.class
+com\mycompany\blackboard\eventos\EventoIniciarJuego.class
+com\mycompany\blackboard\interfaces\VistaLobbyListener.class
+com\mycompany\blackboard\ks\KSEscucharJugadorListo.class
+com\mycompany\blackboard\eventos\EventoJugadorListo.class
+com\mycompany\blackboard\ks\KSIniciarJuego$1.class
+com\mycompany\blackboard\ks\KSActivarBotonIniciar.class
+com\mycompany\blackboard\Blackboard.class
+com\mycompany\blackboard\ks\KSEvaluarJugadoresListos.class
+com\mycompany\blackboard\ks\KSIniciarPartidaEnRed.class
+com\mycompany\blackboard\Evento.class
+com\mycompany\blackboard\eventos\EventoIniciarPartida.class
+com\mycompany\blackboard\modelo\Jugador.class
+com\mycompany\blackboard\modelo\JugadorRed.class
