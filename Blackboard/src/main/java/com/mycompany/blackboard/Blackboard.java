@@ -3,8 +3,10 @@
  */
 package com.mycompany.blackboard;
 
-import java.util.ArrayList;
-import java.util.List;
+import blackboard.IV;
+import com.mycompany.timbirichenetwork.Evento;
+
+import java.util.*;
 
 /**
  *
@@ -12,30 +14,66 @@ import java.util.List;
  */
 public class Blackboard {
 
-    private final List<KnowledgeSource> knowledgeSources;
-    private final List<Evento> eventos;
+    private final Map<Class<?>, List<IV<?>>> observadores = new HashMap<>();
+    private final Map<Class<?>, Object> estadoCompartido = new HashMap<>();
+    private static Blackboard instancia;
 
-    public Blackboard() {
-        this.knowledgeSources = new ArrayList<>();
-        this.eventos = new ArrayList<>();
+    private Blackboard() {
     }
 
-    public void registrarKnowledgeSource(KnowledgeSource ks) {
-        knowledgeSources.add(ks);
+    public static Blackboard getInstancia() {
+        if (instancia == null) {
+            instancia = new Blackboard();
+        }
+        return instancia;
     }
 
-    public void publicarEvento(Evento evento) {
-        eventos.add(evento);
-        notificarKnowledgeSources(evento);
-    }
-
-    private void notificarKnowledgeSources(Evento evento) {
-        for (KnowledgeSource ks : knowledgeSources) {
-            ks.procesarEvento(evento, this);
+    public synchronized <T> void registrar(Class<T> tipo, IV<T> observador) {
+        observadores.computeIfAbsent(tipo, k -> new ArrayList<>()).add(observador);
+        Object actual = estadoCompartido.get(tipo);
+        if (actual != null) {
+            observador.actualizar(tipo.cast(actual));
         }
     }
 
-    public List<Evento> getEventos() {
-        return eventos;
+    public synchronized <T> void publicar(T nuevoEstado) {
+        if (nuevoEstado == null) {
+            return;
+        }
+
+        Class<?> tipo = nuevoEstado.getClass();
+        estadoCompartido.put(tipo, nuevoEstado);
+
+        List<IV<?>> lista = observadores.getOrDefault(tipo, Collections.emptyList());
+        for (IV<?> obs : lista) {
+            try {
+                @SuppressWarnings("unchecked")
+                IV<T> observador = (IV<T>) obs;
+                observador.actualizar(nuevoEstado);
+            } catch (ClassCastException e) {
+                // Ignorar incompatibles
+            }
+        }
+    }
+
+    public synchronized <T> Optional<T> obtenerEstado(Class<T> tipo) {
+        Object valor = estadoCompartido.get(tipo);
+        if (valor != null) {
+            return Optional.of(tipo.cast(valor));
+        }
+        return Optional.empty();
+    }
+
+    public synchronized void publicarEvento(Evento evento) {
+        if (evento == null) {
+            return;
+        }
+        System.out.println("Evento recibido: " + evento.getClass().getSimpleName());
+        publicar(evento);
+    }
+
+    public synchronized void limpiar() {
+        observadores.clear();
+        estadoCompartido.clear();
     }
 }

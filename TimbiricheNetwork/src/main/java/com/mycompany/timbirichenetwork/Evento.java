@@ -2,18 +2,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.mycompany.blackboard.eventos;
+package com.mycompany.timbirichenetwork;
 
-import com.mycompany.blackboard.Evento;
+import java.io.Serializable;
 
 /**
  *
  * @author joseq
  */
-public class EventoIniciarJuego extends Evento {
-
-    public EventoIniciarJuego() {
-        super("IniciarJuego");
-    }
-
+public class Evento implements Serializable {
+    
 }

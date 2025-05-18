@@ -4,12 +4,11 @@
  */
 package com.mycompany.timbirichenetwork;
 
+import com.mycompany.blackboard.BlackboardBridge;
+
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.IOException;
 
 /**
  *
@@ -17,83 +16,46 @@ import java.io.IOException;
  */
 public class Cliente {
 
-    private final String host;
-    private final int puerto;
     private Socket socket;
-    private BufferedReader in;
-    private BufferedWriter out;
-    private EventoRedListener listener;
+    private ObjectOutputStream salida;
+    private ObjectInputStream entrada;
 
-    /**
-     * Interfaz de callback para quien use el Cliente
-     */
-    public interface EventoRedListener {
-
-        void onEvento(EventoRed ev);
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param host dirección del servidor
-     * @param puerto puerto del servidor
-     * @param listener listener inicial (puede ser null)
-     */
-    public Cliente(String host, int puerto, EventoRedListener listener) {
-        this.host = host;
-        this.puerto = puerto;
-        this.listener = listener;
-    }
-
-    /**
-     * Permite cambiar o asignar el listener tras la creación
-     */
-    public void setListener(EventoRedListener listener) {
-        this.listener = listener;
-    }
-
-    /**
-     * Conecta al servidor y arranca el hilo lector
-     */
-    public void connect() throws IOException {
-        socket = new Socket(host, puerto);
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        new Thread(this::readLoop).start();
-    }
-
-    /**
-     * Bucle que lee líneas JSON y notifica por callback
-     */
-    private void readLoop() {
+    public Cliente(String host, int puerto) {
         try {
-            String line;
-            while ((line = in.readLine()) != null) {
-                EventoRed ev = Protocolo.decode(line);
-                if (listener != null) {
-                    listener.onEvento(ev);
-                }
-            }
-        } catch (IOException e) {
+            socket = new Socket(host, puerto);
+            salida = new ObjectOutputStream(socket.getOutputStream());
+            entrada = new ObjectInputStream(socket.getInputStream());
+
+            System.out.println("Cliente conectado a servidor en " + host + ":" + puerto);
+
+            new Thread(this::escucharEventos).start();
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * Envía un EventoRed al servidor
-     */
-    public void send(EventoRed ev) throws IOException {
-        String msg = Protocolo.encode(ev);
-        out.write(msg);
-        out.newLine();
-        out.flush();
+    private void escucharEventos() {
+        try {
+            while (true) {
+                Object recibido = entrada.readObject();
+                if (recibido instanceof Evento) {
+                    Evento evento = (Evento) recibido;
+                    BlackboardBridge.recibirEventoDesdeRed(evento);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Conexión cerrada.");
+        }
     }
 
-    /**
-     * Cierra la conexión
-     */
-    public void disconnect() throws IOException {
-        socket.close();
+    public void enviarEvento(Evento evento) {
+        try {
+            salida.writeObject(evento);
+            salida.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

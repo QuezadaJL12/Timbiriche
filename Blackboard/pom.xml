@@ -11,19 +11,16 @@
     <packaging>jar</packaging>
 
     <name>Blackboard</name>
-
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>TimbiricheNetwork</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
     </properties>
-
-    <dependencies>
-        <!--  dependencias agrégalas aquí -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>TimbiricheGUI</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
 
 </project>

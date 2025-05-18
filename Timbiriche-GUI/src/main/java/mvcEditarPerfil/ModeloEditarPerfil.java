@@ -4,10 +4,7 @@
  */
 package mvcEditarPerfil;
 
-import com.mycompany.blackboard.modelo.Jugador;
-import blackboard.IV;
-import java.util.ArrayList;
-import java.util.List;
+
 
 /**
  *
@@ -15,39 +12,27 @@ import java.util.List;
  */
 public class ModeloEditarPerfil {
 
-   private Jugador jugadorOriginal;
-    private final List<IV<ModeloEditarPerfil>> listeners = new ArrayList<>();
+    private String nuevoNombre;
+    private String nuevaRutaAvatar;
 
-    public ModeloEditarPerfil(Jugador jugadorOriginal) {
-        this.jugadorOriginal = jugadorOriginal;
+    public String getNuevoNombre() {
+        return nuevoNombre;
     }
 
-    /** Suscribe un listener para cambios */
-    public void addListener(IV<ModeloEditarPerfil> l) {
-        listeners.add(l);
+    public void setNuevoNombre(String nuevoNombre) {
+        this.nuevoNombre = nuevoNombre;
     }
 
-    /** Notifica a todos los listeners */
-    private void notifyListeners() {
-        for (IV<ModeloEditarPerfil> l : listeners) {
-            l.update(this);
-        }
+    public String getNuevaRutaAvatar() {
+        return nuevaRutaAvatar;
     }
 
-    /** Obtiene el Jugador a editar */
-    public Jugador getJugadorOriginal() {
-        return jugadorOriginal;
+    public void setNuevaRutaAvatar(String nuevaRutaAvatar) {
+        this.nuevaRutaAvatar = nuevaRutaAvatar;
     }
 
-    /** Cambia el nombre y notifica */
-    public void setNombre(String nombre) {
-        jugadorOriginal.setNombre(nombre);
-        notifyListeners();
-    }
-
-    /** Cambia la ruta de avatar y notifica */
-    public void setRutaAvatar(String rutaAvatar) {
-        jugadorOriginal.setRutaAvatar(rutaAvatar);
-        notifyListeners();
+    public boolean datosValidos() {
+        return nuevoNombre != null && !nuevoNombre.trim().isEmpty()
+                && nuevaRutaAvatar != null && !nuevaRutaAvatar.trim().isEmpty();
     }
 }

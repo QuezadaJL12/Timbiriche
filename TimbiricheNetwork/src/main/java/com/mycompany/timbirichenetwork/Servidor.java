@@ -4,8 +4,10 @@
  */
 package com.mycompany.timbirichenetwork;
 
-import java.net.*;
-import java.io.*;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -15,101 +17,49 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class Servidor {
 
-    private final int puerto;
-    private ServerSocket serverSocket;
-    private final List<ClientHandler> clients = new CopyOnWriteArrayList<>();
+    private final List<ObjectOutputStream> clientes = new CopyOnWriteArrayList<>();
 
     public Servidor(int puerto) {
-        this.puerto = puerto;
-    }
+        try (ServerSocket servidor = new ServerSocket(puerto)) {
+            System.out.println("Servidor escuchando en puerto " + puerto);
 
-    /**
-     * Arranca el servidor en un hilo separado
-     */
-    public void start() throws IOException {
-        serverSocket = new ServerSocket(puerto);
-        System.out.println("Servidor escuchando en puerto " + puerto);
-        new Thread(() -> {
-            try {
-                while (!serverSocket.isClosed()) {
-                    Socket client = serverSocket.accept();
-                    ClientHandler h = new ClientHandler(client);
-                    clients.add(h);
-                    new Thread(h).start();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            while (true) {
+                Socket clienteSocket = servidor.accept();
+                ObjectOutputStream salida = new ObjectOutputStream(clienteSocket.getOutputStream());
+                ObjectInputStream entrada = new ObjectInputStream(clienteSocket.getInputStream());
+
+                clientes.add(salida);
+                System.out.println("Cliente conectado: " + clienteSocket.getInetAddress());
+
+                new Thread(() -> manejarCliente(entrada)).start();
             }
-        }).start();
-    }
-
-    /**
-     * Cierra el servidor y todas las conexiones
-     */
-    public void stop() throws IOException {
-        for (ClientHandler h : clients) {
-            h.stop();
-        }
-        serverSocket.close();
-    }
-
-    /**
-     * Reenvía un evento a todos los clientes conectados
-     */
-    private void broadcast(EventoRed ev) {
-        String msg = Protocolo.encode(ev);
-        for (ClientHandler h : clients) {
-            h.send(msg);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Handler de cada cliente
-     */
-    private class ClientHandler implements Runnable {
-
-        private final Socket socket;
-        private final BufferedReader in;
-        private final BufferedWriter out;
-
-        ClientHandler(Socket s) throws IOException {
-            this.socket = s;
-            this.in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            this.out = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
-        }
-
-        @Override
-        public void run() {
-            try {
-                String line;
-                while ((line = in.readLine()) != null) {
-                    EventoRed ev = Protocolo.decode(line);
-                    // TODO: lógica especial en JOIN/START si quieres
-                    broadcast(ev);
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } finally {
-                clients.remove(this);
-                try {
-                    socket.close();
-                } catch (IOException ignored) {
+    private void manejarCliente(ObjectInputStream entrada) {
+        try {
+            while (true) {
+                Object recibido = entrada.readObject();
+                if (recibido instanceof Evento) {
+                    Evento evento = (Evento) recibido;
+                    reenviarEvento(evento);
                 }
             }
+        } catch (Exception e) {
+            System.out.println("Cliente desconectado.");
         }
+    }
 
-        void send(String msg) {
+    private void reenviarEvento(Evento evento) {
+        for (ObjectOutputStream out : clientes) {
             try {
-                out.write(msg);
-                out.newLine();
+                out.writeObject(evento);
                 out.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                System.out.println("Error enviando a un cliente.");
             }
-        }
-
-        void stop() throws IOException {
-            socket.close();
         }
     }
 

@@ -1,67 +1,70 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package mvcRegistro;
 
 import blackboard.IV;
+
 import javax.swing.*;
 import java.awt.*;
 
-/**
- *
- * @author joseq
- */
-public class VistaRegistro extends JPanel implements IV<ModeloRegistro> {
+public class VistaRegistro extends JFrame implements IV<ModeloRegistro> {
 
-    private ControladorRegistro controlador;
+    private final JTextField txtNombre;
+    private final JButton btnColor;
+    private final JButton btnAvatar;
+    private final JButton btnRegistrar;
 
-    private final JTextField txtNombre = new JTextField(15);
-    private final JComboBox<String> cmbColor = new JComboBox<>(new String[]{"#FF0000", "#00FF00", "#0000FF"});
-    private final JComboBox<String> cmbAvatar = new JComboBox<>(new String[]{"GATO.png", "LEIA.png", "PINGUINO.png"});
-    private final JButton btnRegistrar = new JButton("Registrar");
+    private Color colorSeleccionado = Color.BLUE;
+    private String rutaAvatarSeleccionado = "";
 
     public VistaRegistro() {
-        setLayout(new GridLayout(4, 2, 5, 5));
-        add(new JLabel("Nombre:"));
+        setTitle("Registro de Jugador");
+        setSize(400, 300);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(new GridLayout(5, 1));
+
+        txtNombre = new JTextField();
+        btnColor = new JButton("Seleccionar Color");
+        btnAvatar = new JButton("Seleccionar Avatar");
+        btnRegistrar = new JButton("Registrar");
+
+        add(new JLabel("Nombre del jugador:"));
         add(txtNombre);
-        add(new JLabel("Color:"));
-        add(cmbColor);
-        add(new JLabel("Avatar:"));
-        add(cmbAvatar);
-        add(new JLabel());
+        add(btnColor);
+        add(btnAvatar);
         add(btnRegistrar);
 
-        btnRegistrar.addActionListener(e -> {
-            if (controlador != null) {
-                controlador.onRegistrar();
+        btnColor.addActionListener(e -> {
+            colorSeleccionado = JColorChooser.showDialog(this, "Elige color", colorSeleccionado);
+        });
+
+        btnAvatar.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser("Avatares/");
+            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                rutaAvatarSeleccionado = chooser.getSelectedFile().getAbsolutePath();
             }
         });
+
+        setVisible(true);
     }
 
-    /**
-     * Este método se llama desde el modelo al notificar
-     */
-    @Override
-    public void update(ModeloRegistro m) {
-        txtNombre.setText(m.getNombre());
-        cmbColor.setSelectedItem(m.getColorHex());
-        cmbAvatar.setSelectedItem(m.getRutaAvatar());
+    public JButton getBtnRegistrar() {
+        return btnRegistrar;
     }
 
     public String getNombre() {
-        return txtNombre.getText();
+        return txtNombre.getText().trim();
     }
 
     public String getColorHex() {
-        return (String) cmbColor.getSelectedItem();
+        return "#" + Integer.toHexString(colorSeleccionado.getRGB()).substring(2);
     }
 
     public String getRutaAvatar() {
-        return (String) cmbAvatar.getSelectedItem();
+        return rutaAvatarSeleccionado;
     }
 
-    public void setControlador(ControladorRegistro c) {
-        this.controlador = c;
+    @Override
+    public void actualizar(ModeloRegistro modelo) {
+        txtNombre.setText(modelo.getNombre());
     }
 }
