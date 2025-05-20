@@ -4,6 +4,7 @@ import com.mycompany.timbirichenetwork.eventos.EventoIniciarJuego;
 import com.mycompany.timbirichenetwork.eventos.EventoIniciarPartida;
 import com.mycompany.timbirichenetwork.eventos.EventoJugadorListo;
 import com.mycompany.timbirichenetwork.modelo.Jugador;
+import mvcJuego.ControladorJuego;
 import mvcLobby.ModeloLobbyJuego;
 import javax.swing.*;
 
@@ -60,10 +61,18 @@ public class BlackboardBridge {
             instanciaGlobal.publicarEvento(e);
             
         } else if (evento instanceof EventoIniciarJuego e) {
+            System.out.println("? [Bridge] Recibido EventoIniciarJuego");
             for (Jugador j : e.getJugadores()) {
                 j.setAvatar(new ImageIcon(j.getRutaAvatar()));
             }
             instanciaGlobal.publicarEvento(e);
+            
+            // IMPORTANTE: Crear el controlador del juego cuando se recibe este evento
+            // esto hará que todos los clientes abran la pantalla de juego
+            SwingUtilities.invokeLater(() -> {
+                System.out.println("? [Bridge] Iniciando pantalla de juego para todos los jugadores");
+                new ControladorJuego();
+            });
             
         } else if (evento instanceof EventoIniciarPartida e) {
             instanciaGlobal.publicarEvento(e);
