@@ -1,4 +1,3 @@
-// ✅ ControladorLobbyJuego.java
 package mvcLobby;
 
 import com.mycompany.blackboard.Blackboard;
@@ -7,6 +6,7 @@ import com.mycompany.timbirichenetwork.Cliente;
 import com.mycompany.timbirichenetwork.eventos.EventoIniciarJuego;
 import com.mycompany.timbirichenetwork.eventos.EventoJugadorListo;
 import com.mycompany.timbirichenetwork.modelo.Jugador;
+import mvcEditarPerfil.ControladorEditarPerfil;
 
 import java.util.List;
 
@@ -16,10 +16,12 @@ public class ControladorLobbyJuego {
     private final VistaLobby vista;
     private final int tamañoTablero;
     private final Cliente cliente;
+    private final Jugador jugadorLocal;
 
     public ControladorLobbyJuego(Jugador jugadorHost, int tamañoTablero, Cliente cliente) {
         this.tamañoTablero = tamañoTablero;
         this.cliente = cliente;
+        this.jugadorLocal = jugadorHost;
         this.vista = new VistaLobby();
 
         Blackboard bb = Blackboard.getInstancia();
@@ -50,7 +52,7 @@ public class ControladorLobbyJuego {
         }
 
         vista.getBtnIniciar().addActionListener(e -> iniciarPartidaSiEsPosible());
-        vista.getBtnEditarPerfil().addActionListener(e -> editarPerfil(jugadorHost));
+        vista.getBtnEditarPerfil().addActionListener(e -> editarPerfil());
     }
 
     private void iniciarPartidaSiEsPosible() {
@@ -74,14 +76,18 @@ public class ControladorLobbyJuego {
         }
     }
 
-    private void editarPerfil(Jugador jugador) {
-        jugador.setListo(true);
+    private void editarPerfil() {
+        // Mostrar la ventana de editar perfil
+        new ControladorEditarPerfil(jugadorLocal);
+        
+        // Marcar como listo y notificar
+        jugadorLocal.setListo(true);
         Blackboard.getInstancia().publicar(modelo);
 
-        EventoJugadorListo evento = new EventoJugadorListo(jugador);
+        EventoJugadorListo evento = new EventoJugadorListo(jugadorLocal);
         Blackboard.getInstancia().publicarEvento(evento);
         cliente.enviarEvento(evento);
 
-        System.out.println("? Jugador marcado como listo: " + jugador.getNombre());
+        System.out.println("? Jugador marcado como listo: " + jugadorLocal.getNombre());
     }
 }

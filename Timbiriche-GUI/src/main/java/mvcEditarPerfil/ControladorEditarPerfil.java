@@ -1,6 +1,8 @@
 package mvcEditarPerfil;
 
+import com.mycompany.blackboard.Blackboard;
 import com.mycompany.timbirichenetwork.modelo.Jugador;
+import mvcLobby.ModeloLobbyJuego;
 
 public class ControladorEditarPerfil {
 
@@ -11,8 +13,12 @@ public class ControladorEditarPerfil {
 
         vista.setPerfilEditadoListener(jugadorActualizado -> {
             System.out.println("Perfil actualizado: " + jugadorActualizado.getNombre());
-            // Aquí puedes volver a publicar en el Blackboard si es necesario
-            // Blackboard.getInstancia().publicar(modeloLobby);
+            
+            // Actualizar en el modelo de lobby si está disponible
+            Blackboard.getInstancia().obtenerEstado(ModeloLobbyJuego.class).ifPresent(modeloLobby -> {
+                modeloLobby.actualizarJugador(jugadorActualizado);
+                Blackboard.getInstancia().publicar(modeloLobby);
+            });
         });
     }
 }
