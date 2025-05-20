@@ -5,6 +5,8 @@
 package com.mycompany.timbirichenetwork;
 
 import com.mycompany.blackboard.BlackboardBridge;
+import com.mycompany.timbirichenetwork.eventos.EventoJugadorListo;
+import com.mycompany.timbirichenetwork.modelo.Jugador;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -41,6 +43,12 @@ public class Cliente {
                 Object recibido = entrada.readObject();
                 if (recibido instanceof Evento) {
                     Evento evento = (Evento) recibido;
+
+                    if (evento instanceof EventoJugadorListo) {
+                        Jugador j = ((EventoJugadorListo) evento).getJugador();
+                        System.out.println(">>> Cliente recibió jugador: " + j.getNombre() + " | listo=" + j.isListo());
+                    }
+
                     BlackboardBridge.recibirEventoDesdeRed(evento);
                 }
             }

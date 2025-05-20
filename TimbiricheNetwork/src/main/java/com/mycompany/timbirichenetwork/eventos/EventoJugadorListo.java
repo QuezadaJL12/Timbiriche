@@ -6,17 +6,18 @@ package com.mycompany.timbirichenetwork.eventos;
 
 import com.mycompany.timbirichenetwork.Evento;
 import com.mycompany.timbirichenetwork.modelo.Jugador;
+import java.io.Serializable;
 
 /**
  *
  * @author joseq
  */
-public class EventoJugadorListo extends Evento {
+public class EventoJugadorListo extends Evento implements Serializable {
 
     private final Jugador jugador;
 
     public EventoJugadorListo(Jugador jugador) {
-        this.jugador = jugador;
+        this.jugador = jugador; // usar el mismo objeto marcado como listo
     }
 
     public Jugador getJugador() {

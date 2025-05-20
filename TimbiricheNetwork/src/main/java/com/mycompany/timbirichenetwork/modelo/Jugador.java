@@ -74,7 +74,7 @@ public class Jugador implements Serializable {
             return false;
         }
         Jugador otro = (Jugador) obj;
-        return this.nombre.equalsIgnoreCase(otro.nombre);
+        return this.nombre.trim().equalsIgnoreCase(otro.nombre.trim());
     }
 
     @Override

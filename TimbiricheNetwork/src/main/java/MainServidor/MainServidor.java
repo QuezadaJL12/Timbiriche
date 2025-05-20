@@ -1,4 +1,4 @@
-package main;
+package MainServidor;
 
 import com.mycompany.timbirichenetwork.Servidor;
 
