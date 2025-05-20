@@ -1,6 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- */
+// ✅ Blackboard.java
 package com.mycompany.blackboard;
 
 import blackboard.IV;
@@ -8,10 +6,6 @@ import com.mycompany.timbirichenetwork.Evento;
 
 import java.util.*;
 
-/**
- *
- * @author joseq
- */
 public class Blackboard {
 
     private final Map<Class<?>, List<IV<?>>> observadores = new HashMap<>();
@@ -32,6 +26,7 @@ public class Blackboard {
         observadores.computeIfAbsent(tipo, k -> new ArrayList<>()).add(observador);
         Object actual = estadoCompartido.get(tipo);
         if (actual != null) {
+            System.out.println("? Enviando estado actual a nuevo observador de " + tipo.getSimpleName());
             observador.actualizar(tipo.cast(actual));
         }
     }
@@ -44,32 +39,48 @@ public class Blackboard {
         Class<?> tipo = nuevoEstado.getClass();
         estadoCompartido.put(tipo, nuevoEstado);
 
+        System.out.println("? Publicando nuevo estado: " + tipo.getSimpleName());
+
+        if (tipo == mvcLobby.ModeloLobbyJuego.class) {
+            mvcLobby.ModeloLobbyJuego modelo = (mvcLobby.ModeloLobbyJuego) nuevoEstado;
+            System.out.println("? Contenido del estado actual de ModeloLobbyJuego:");
+            modelo.getJugadores().forEach(j
+                    -> System.out.println("   - " + j.getNombre() + " | listo=" + j.isListo()));
+        }
+
         List<IV<?>> lista = observadores.getOrDefault(tipo, Collections.emptyList());
         for (IV<?> obs : lista) {
             try {
                 @SuppressWarnings("unchecked")
                 IV<T> observador = (IV<T>) obs;
+                System.out.println("? Notificando a observador: " + observador.getClass().getSimpleName());
                 observador.actualizar(nuevoEstado);
             } catch (ClassCastException e) {
-                // Ignorar incompatibles
+                System.out.println("⚠ Error de casting en observador para " + tipo.getSimpleName());
             }
         }
     }
 
     public synchronized <T> Optional<T> obtenerEstado(Class<T> tipo) {
         Object valor = estadoCompartido.get(tipo);
-        if (valor != null) {
-            return Optional.of(tipo.cast(valor));
-        }
-        return Optional.empty();
+        System.out.println(valor == null ? "?? Estado no encontrado para: " + tipo.getSimpleName() : "? Estado obtenido para: " + tipo.getSimpleName());
+        return Optional.ofNullable(tipo.cast(valor));
     }
 
     public synchronized void publicarEvento(Evento evento) {
         if (evento == null) {
             return;
         }
-        System.out.println("Evento recibido: " + evento.getClass().getSimpleName());
+        System.out.println("? Evento recibido: " + evento.getClass().getSimpleName());
         publicar(evento);
+    }
+
+    public void forzarPublicacion(Class<?> claseModelo) {
+        Optional<?> estado = this.obtenerEstado(claseModelo);
+        estado.ifPresent(obj -> {
+            System.out.println("? Forzando publicación manual del modelo: " + claseModelo.getSimpleName());
+            this.publicar(obj);
+        });
     }
 
     public synchronized void limpiar() {
