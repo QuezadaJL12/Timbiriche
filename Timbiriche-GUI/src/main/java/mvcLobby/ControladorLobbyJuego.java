@@ -1,6 +1,10 @@
+// ✅ ControladorLobbyJuego.java
 package mvcLobby;
 
 import com.mycompany.blackboard.Blackboard;
+import com.mycompany.blackboard.ks.KSEvaluarJugadoresListos;
+import com.mycompany.timbirichenetwork.Cliente;
+import com.mycompany.timbirichenetwork.eventos.EventoIniciarJuego;
 import com.mycompany.timbirichenetwork.eventos.EventoJugadorListo;
 import com.mycompany.timbirichenetwork.modelo.Jugador;
 
@@ -11,15 +15,39 @@ public class ControladorLobbyJuego {
     private final ModeloLobbyJuego modelo;
     private final VistaLobby vista;
     private final int tamañoTablero;
+    private final Cliente cliente;
 
-    public ControladorLobbyJuego(Jugador jugadorHost, int tamañoTablero) {
-        this.modelo = new ModeloLobbyJuego();
-        this.vista = new VistaLobby();
+    public ControladorLobbyJuego(Jugador jugadorHost, int tamañoTablero, Cliente cliente) {
         this.tamañoTablero = tamañoTablero;
+        this.cliente = cliente;
+        this.vista = new VistaLobby();
 
-        Blackboard.getInstancia().registrar(ModeloLobbyJuego.class, vista);
-        modelo.agregarJugador(jugadorHost);
-        Blackboard.getInstancia().publicar(modelo);
+        Blackboard bb = Blackboard.getInstancia();
+
+        this.modelo = bb.obtenerEstado(ModeloLobbyJuego.class)
+                .orElseGet(() -> {
+                    ModeloLobbyJuego nuevo = new ModeloLobbyJuego();
+                    System.out.println("✅ ModeloLobbyJuego nuevo creado y publicado por " + jugadorHost.getNombre());
+                    bb.publicar(nuevo);
+                    return nuevo;
+                });
+
+        bb.registrar(ModeloLobbyJuego.class, vista);
+        bb.publicar(modelo);
+
+        boolean yaExiste = modelo.getJugadores().stream()
+                .anyMatch(j -> j.getNombre().trim().equalsIgnoreCase(jugadorHost.getNombre().trim()));
+
+        if (!yaExiste) {
+            System.out.println("? Agregando jugador local al modelo: " + jugadorHost.getNombre());
+            jugadorHost.setListo(false);
+            modelo.agregarJugador(jugadorHost);
+            bb.publicar(modelo);
+
+            EventoJugadorListo evento = new EventoJugadorListo(jugadorHost);
+            bb.publicarEvento(evento);
+            cliente.enviarEvento(evento);
+        }
 
         vista.getBtnIniciar().addActionListener(e -> iniciarPartidaSiEsPosible());
         vista.getBtnEditarPerfil().addActionListener(e -> editarPerfil(jugadorHost));
@@ -27,23 +55,33 @@ public class ControladorLobbyJuego {
 
     private void iniciarPartidaSiEsPosible() {
         List<Jugador> jugadores = modelo.getJugadores();
-        if (modelo.puedeIniciar()) {
+        KSEvaluarJugadoresListos ks = new KSEvaluarJugadoresListos();
+
+        System.out.println(">>> ESTADO ACTUAL DE JUGADORES:");
+        jugadores.forEach(j -> System.out.println("- " + j.getNombre() + " | listo=" + j.isListo()));
+
+        if (ks.validar(jugadores)) {
             vista.dispose();
-            // Aquí puedes iniciar ControladorJuego si lo tienes
-            System.out.println("Iniciando partida con " + jugadores.size() + " jugadores.");
+            System.out.println("✅ Iniciando partida con " + jugadores.size() + " jugadores.");
+
+            EventoIniciarJuego evento = new EventoIniciarJuego(jugadores, tamañoTablero);
+            Blackboard.getInstancia().publicarEvento(evento);
+            cliente.enviarEvento(evento);
+
+            System.out.println("🚀 EventoIniciarJuego enviado a todos los clientes.");
         } else {
-            System.out.println("Se requieren al menos 2 jugadores listos.");
+            System.out.println("❌ Se requieren al menos 2 jugadores listos.");
         }
     }
 
     private void editarPerfil(Jugador jugador) {
-        jugador.setNombre(jugador.getNombre() + " (editado)");
+        jugador.setListo(true);
         Blackboard.getInstancia().publicar(modelo);
-    }
 
-    public void marcarJugadorListo(Jugador jugador) {
-        modelo.marcarJugadorListo(jugador);
-        Blackboard.getInstancia().publicar(modelo);
-        Blackboard.getInstancia().publicarEvento(new EventoJugadorListo(jugador));
+        EventoJugadorListo evento = new EventoJugadorListo(jugador);
+        Blackboard.getInstancia().publicarEvento(evento);
+        cliente.enviarEvento(evento);
+
+        System.out.println("? Jugador marcado como listo: " + jugador.getNombre());
     }
 }

@@ -1,5 +1,6 @@
 package mvcRegistro;
 
+import com.mycompany.timbirichenetwork.Cliente;
 import com.mycompany.timbirichenetwork.modelo.Jugador;
 import mvcTamanoTablero.ControladorTamanoTablero;
 
@@ -9,8 +10,10 @@ public class ControladorRegistro {
 
     private final ModeloRegistro modelo;
     private final VistaRegistro vista;
+    private final Cliente cliente;
 
-    public ControladorRegistro() {
+    public ControladorRegistro(Cliente cliente) {
+        this.cliente = cliente;
         this.modelo = new ModeloRegistro();
         this.vista = new VistaRegistro();
 
@@ -30,6 +33,6 @@ public class ControladorRegistro {
         Jugador jugador = new Jugador(modelo.getNombre(), modelo.getColorHex(), modelo.getRutaAvatar(), false);
 
         vista.dispose();
-        new ControladorTamanoTablero(jugador);
+        new ControladorTamanoTablero(jugador, cliente);
     }
 }

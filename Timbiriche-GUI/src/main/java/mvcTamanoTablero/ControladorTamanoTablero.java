@@ -1,5 +1,6 @@
 package mvcTamanoTablero;
 
+import com.mycompany.timbirichenetwork.Cliente;
 import com.mycompany.timbirichenetwork.modelo.Jugador;
 import mvcLobby.ControladorLobbyJuego;
 
@@ -10,8 +11,11 @@ public class ControladorTamanoTablero {
     private final ModeloTamanoTablero modelo;
     private final VistaTamanoTablero vista;
     private final Jugador jugador;
+    private final Cliente cliente;
+    
 
-    public ControladorTamanoTablero(Jugador jugador) {
+    public ControladorTamanoTablero(Jugador jugador, Cliente cliente) {
+        this.cliente = cliente;
         this.jugador = jugador;
         this.modelo = new ModeloTamanoTablero();
         this.vista = new VistaTamanoTablero();
@@ -28,6 +32,6 @@ public class ControladorTamanoTablero {
         }
 
         vista.dispose();
-        new ControladorLobbyJuego(jugador, modelo.getTamañoSeleccionado());
+        new ControladorLobbyJuego(jugador, modelo.getTamañoSeleccionado(), cliente);
     }
 }
