@@ -14,4 +14,5 @@ mvcLobby\ControladorLobbyJuego.class
 mvcJuego\VistaJuego.class
 mvcEditarPerfil\PerfilEditadoListener.class
 mvcJuego\ControladorJuego.class
+mvcJuego\VistaJuego$1.class
 mvcTamanoTablero\VistaTamanoTablero.class
