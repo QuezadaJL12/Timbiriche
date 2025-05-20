@@ -9,6 +9,8 @@ public class KSEscucharJugadorListo {
 
     public void procesar(EventoJugadorListo evento) {
         Jugador jugador = evento.getJugador();
+        // Asegurar que el jugador está marcado como listo
+        jugador.setListo(true);
         Blackboard bb = Blackboard.getInstancia();
 
         bb.obtenerEstado(ModeloLobbyJuego.class).ifPresent(modelo -> {

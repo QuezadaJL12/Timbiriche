@@ -25,6 +25,8 @@ public class BlackboardBridge {
 
         if (evento instanceof EventoJugadorListo e) {
             Jugador jugador = e.getJugador();
+            // Asegurar que el jugador está marcado como listo
+            jugador.setListo(true);
             System.out.println(">>> Cliente recibió jugador: " + jugador.getNombre() + " | listo=" + jugador.isListo());
             
             // Asegurarnos de que el modelo existe en el blackboard
