@@ -42,7 +42,7 @@ public class ControladorLobbyJuego {
 
         if (!yaExiste) {
             System.out.println("? Agregando jugador local al modelo: " + jugadorHost.getNombre());
-            jugadorHost.setListo(false);
+            // El jugador ya viene marcado como listo desde el registro
             modelo.agregarJugador(jugadorHost);
             bb.publicar(modelo);
 
@@ -80,14 +80,16 @@ public class ControladorLobbyJuego {
         // Mostrar la ventana de editar perfil
         new ControladorEditarPerfil(jugadorLocal);
         
-        // Marcar como listo y notificar
-        jugadorLocal.setListo(true);
-        Blackboard.getInstancia().publicar(modelo);
+        // Mantener jugador como listo
+        if (!jugadorLocal.isListo()) {
+            jugadorLocal.setListo(true);
+            Blackboard.getInstancia().publicar(modelo);
 
-        EventoJugadorListo evento = new EventoJugadorListo(jugadorLocal);
-        Blackboard.getInstancia().publicarEvento(evento);
-        cliente.enviarEvento(evento);
+            EventoJugadorListo evento = new EventoJugadorListo(jugadorLocal);
+            Blackboard.getInstancia().publicarEvento(evento);
+            cliente.enviarEvento(evento);
 
-        System.out.println("? Jugador marcado como listo: " + jugadorLocal.getNombre());
+            System.out.println("? Jugador marcado como listo: " + jugadorLocal.getNombre());
+        }
     }
 }

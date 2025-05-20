@@ -30,7 +30,8 @@ public class ControladorRegistro {
             return;
         }
 
-        Jugador jugador = new Jugador(modelo.getNombre(), modelo.getColorHex(), modelo.getRutaAvatar(), false);
+        // Marcar jugador como listo automáticamente
+        Jugador jugador = new Jugador(modelo.getNombre(), modelo.getColorHex(), modelo.getRutaAvatar(), true);
 
         vista.dispose();
         new ControladorTamanoTablero(jugador, cliente);

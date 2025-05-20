@@ -16,7 +16,15 @@ public class ModeloLobbyJuego {
             jugadores.add(jugador);
             System.out.println("? [Modelo] Jugador AGREGADO: " + jugador.getNombre() + " | listo=" + jugador.isListo());
         } else {
-            System.out.println("? [Modelo] Jugador DUPLICADO ignorado: " + jugador.getNombre());
+            // Actualizar jugador existente
+            for (int i = 0; i < jugadores.size(); i++) {
+                Jugador j = jugadores.get(i);
+                if (j.getNombre().trim().toLowerCase().equals(nombreNuevo)) {
+                    jugadores.set(i, jugador);
+                    System.out.println("? [Modelo] Jugador ACTUALIZADO: " + jugador.getNombre() + " | listo=" + jugador.isListo());
+                    break;
+                }
+            }
         }
         imprimirEstado();
     }
@@ -65,6 +73,9 @@ public class ModeloLobbyJuego {
         for (Jugador j : jugadores) {
             if (j.getNombre().trim().equalsIgnoreCase(jugador.getNombre().trim())) {
                 j.setListo(jugador.isListo());
+                j.setRutaAvatar(jugador.getRutaAvatar());
+                j.setColorHex(jugador.getColorHex());
+                j.setAvatar(jugador.getAvatar());
                 actualizado = true;
                 System.out.println("? [Modelo] Jugador ACTUALIZADO: " + jugador.getNombre() + " | listo=" + jugador.isListo());
                 break;
