@@ -6,10 +6,5 @@ package com.mycompany.timbirichenetwork;
 
 import java.io.Serializable;
 
-/**
- *
- * @author joseq
- */
 public class Evento implements Serializable {
-    
 }

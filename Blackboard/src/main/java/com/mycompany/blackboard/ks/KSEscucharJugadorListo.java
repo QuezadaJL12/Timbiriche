@@ -6,30 +6,19 @@ import com.mycompany.timbirichenetwork.modelo.Jugador;
 import mvcLobby.ModeloLobbyJuego;
 
 public class KSEscucharJugadorListo {
-
     public void procesar(EventoJugadorListo evento) {
         Jugador jugador = evento.getJugador();
-        // Asegurar que el jugador está marcado como listo
         jugador.setListo(true);
+
         Blackboard bb = Blackboard.getInstancia();
+        ModeloLobbyJuego modelo = bb.obtenerEstado(ModeloLobbyJuego.class)
+            .orElseGet(() -> {
+                ModeloLobbyJuego nuevo = new ModeloLobbyJuego();
+                bb.publicar(nuevo);
+                return nuevo;
+            });
 
-        bb.obtenerEstado(ModeloLobbyJuego.class).ifPresent(modelo -> {
-            System.out.println("? [KS] EventoJugadorListo procesado: " + jugador.getNombre() + " | listo=" + jugador.isListo());
-
-            boolean yaExiste = modelo.getJugadores().stream()
-                    .anyMatch(j -> j.getNombre().trim().equalsIgnoreCase(jugador.getNombre().trim()));
-
-            if (!yaExiste) {
-                // Agregar nuevo jugador
-                modelo.agregarJugador(jugador);
-            } else {
-                // Actualizar estado del jugador existente
-                modelo.actualizarJugador(jugador);
-            }
-
-            System.out.println("? Publicando nuevo estado: ModeloLobbyJuego (post KS)");
-            modelo.imprimirEstado(); // Agregar esto para validar el estado del modelo antes de publicar
-            bb.publicar(modelo);
-        });
+        modelo.agregarJugador(jugador);
+        bb.publicar(modelo);
     }
 }
