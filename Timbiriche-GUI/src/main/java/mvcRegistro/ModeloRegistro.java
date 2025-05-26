@@ -32,7 +32,7 @@ public class ModeloRegistro {
 
     public boolean datosValidos() {
         return nombre != null && !nombre.trim().isEmpty()
-            && colorHex != null && !colorHex.isEmpty()
-            && rutaAvatar != null && !rutaAvatar.isEmpty();
+                && colorHex != null && !colorHex.isEmpty()
+                && rutaAvatar != null && !rutaAvatar.isEmpty();
     }
 }

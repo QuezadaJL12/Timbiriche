@@ -1,4 +1,3 @@
-// VistaLobby.java
 package mvcLobby;
 
 import blackboard.IV;
@@ -6,9 +5,7 @@ import com.mycompany.timbirichenetwork.modelo.Jugador;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class VistaLobby extends JFrame implements IV<ModeloLobbyJuego> {
 
@@ -17,24 +14,22 @@ public class VistaLobby extends JFrame implements IV<ModeloLobbyJuego> {
     private final JButton btnEditarPerfil;
 
     public VistaLobby() {
-        setTitle("Lobby de Jugadores");
-        setSize(400, 400);
+        setTitle("Lobby");
+        setSize(400, 300);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
         panelJugadores = new JPanel();
         panelJugadores.setLayout(new BoxLayout(panelJugadores, BoxLayout.Y_AXIS));
-        JScrollPane scroll = new JScrollPane(panelJugadores);
-        add(scroll, BorderLayout.CENTER);
+        add(new JScrollPane(panelJugadores), BorderLayout.CENTER);
 
         JPanel panelBotones = new JPanel();
-        btnIniciar = new JButton("Iniciar Partida");
+        btnIniciar = new JButton("Iniciar");
         btnEditarPerfil = new JButton("Editar Perfil");
         panelBotones.add(btnEditarPerfil);
         panelBotones.add(btnIniciar);
-
         add(panelBotones, BorderLayout.SOUTH);
+
         setVisible(true);
     }
 
@@ -48,24 +43,9 @@ public class VistaLobby extends JFrame implements IV<ModeloLobbyJuego> {
 
     @Override
     public void actualizar(ModeloLobbyJuego modelo) {
-        System.out.println("? VistaLobby actualizada con jugadores:");
-        modelo.getJugadores().forEach(j ->
-                System.out.println("   - " + j.getNombre() + " | listo=" + j.isListo()));
-        actualizarVista(modelo.getJugadores());
-    }
-
-    private void actualizarVista(List<Jugador> jugadores) {
         panelJugadores.removeAll();
-        Set<String> nombresVistos = new HashSet<>();
-
-        for (Jugador j : jugadores) {
-            String nombre = j.getNombre().trim().toLowerCase();
-            if (nombresVistos.contains(nombre)) {
-                continue;
-            }
-            nombresVistos.add(nombre);
-
-            JLabel lbl = new JLabel(j.getNombre() + (j.isListo() ? " ✅" : " ⏳"));
+        for (Jugador j : modelo.getJugadores()) {
+            JLabel lbl = new JLabel(j.getNombre() + (j.isListo() ? " ✓" : " ..."));
             lbl.setForeground(Color.decode(j.getColorHex()));
             panelJugadores.add(lbl);
         }

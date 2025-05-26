@@ -12,11 +12,10 @@ public class ControladorTamanoTablero {
     private final VistaTamanoTablero vista;
     private final Jugador jugador;
     private final Cliente cliente;
-    
 
     public ControladorTamanoTablero(Jugador jugador, Cliente cliente) {
-        this.cliente = cliente;
         this.jugador = jugador;
+        this.cliente = cliente;
         this.modelo = new ModeloTamanoTablero();
         this.vista = new VistaTamanoTablero();
 

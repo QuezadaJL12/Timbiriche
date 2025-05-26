@@ -16,10 +16,9 @@ public class VistaRegistro extends JFrame implements IV<ModeloRegistro> {
     private String rutaAvatarSeleccionado = "";
 
     public VistaRegistro() {
-        setTitle("Registro de Jugador");
+        setTitle("Registro");
         setSize(400, 300);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new GridLayout(5, 1));
 
         txtNombre = new JTextField();
@@ -33,10 +32,7 @@ public class VistaRegistro extends JFrame implements IV<ModeloRegistro> {
         add(btnAvatar);
         add(btnRegistrar);
 
-        btnColor.addActionListener(e -> {
-            colorSeleccionado = JColorChooser.showDialog(this, "Elige color", colorSeleccionado);
-        });
-
+        btnColor.addActionListener(e -> colorSeleccionado = JColorChooser.showDialog(this, "Color", colorSeleccionado));
         btnAvatar.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser("Avatares/");
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -44,6 +40,7 @@ public class VistaRegistro extends JFrame implements IV<ModeloRegistro> {
             }
         });
 
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
     }
 
